@@ -1,0 +1,6 @@
+<Project>
+  <!-- Copy this file to GameDir.props and point it at your Pumping Simulator 2 install folder. -->
+  <PropertyGroup>
+    <GameDir>C:\Program Files (x86)\Steam\steamapps\common\Pumping Simulator 2</GameDir>
+  </PropertyGroup>
+</Project>
