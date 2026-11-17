@@ -1,0 +1,14 @@
+# build output
+bin/
+obj/
+*.user
+.vs/
+.idea/
+
+# local game path (see GameDir.props.example)
+GameDir.props
+
+# never commit game files / generated interop assemblies
+**/BepInEx/
+interop/
+*.zip
