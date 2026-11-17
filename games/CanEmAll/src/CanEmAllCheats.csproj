@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Your local game path goes into GameDir.props (not committed). See GameDir.props.example. -->
   <Import Project="GameDir.props" Condition="Exists('GameDir.props')" />
@@ -30,7 +30,8 @@
   </Target>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\logo96.rgba" LogicalName="CanEmAllCheats.logo96.rgba" />
+    <Compile Include="..\..\..\shared\EvilDragonUi.cs" Link="Shared\EvilDragonUi.cs" />
+    <EmbeddedResource Include="..\..\..\shared\logo96.rgba" LogicalName="EvilDragon.logo96.rgba" />
   </ItemGroup>
 
   <ItemGroup>

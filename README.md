@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10" /></a>
-  <img src="https://img.shields.io/badge/games-1-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/games-2-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/single--player-only-ffb300?style=for-the-badge&labelColor=0b1a10" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
@@ -19,6 +19,7 @@
 | Game | Version | Download | Guide |
 |:--|:--:|:--|:--|
 | **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CanEmAll) |
+| **Crime Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CrimeSimulator) |
 
 More games will be added over time. Each game has its own folder under [`games/`](games) with its own install guide.
 
@@ -44,16 +45,20 @@ The exact steps are different for every game, so always follow the guide of your
 
 ```
 EvilDragons-Cheats/
-├── assets/                 logo & shared images
+├── assets/                 logo & images
+├── shared/                 menu design used by every game (themes, logo, buttons)
 └── games/
-    └── CanEmAll/
-        ├── README.md       install guide, features, hotkeys
-        └── src/            source code (C#)
+    ├── CanEmAll/
+    │   ├── README.md       install guide, features, hotkeys
+    │   └── src/            source code (C#)
+    └── CrimeSimulator/
+        ├── README.md
+        └── src/
 ```
 
 ## Disclaimer
 
-These mods are made **for single-player games only**. Do not use them in multiplayer.
+These mods are made **for single-player only**. Games with online modes switch every cheat off automatically while other players are in your session, and scores are never uploaded to leaderboards.
 This project is not affiliated with or endorsed by any game developer or publisher. All game names and trademarks belong to their owners.
 No game files are included in this repository.
 
