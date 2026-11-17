@@ -58,7 +58,7 @@ EvilDragons-Cheats/
 
 ## Disclaimer
 
-These mods are made **for single-player only**. Games with online modes switch every cheat off automatically while other players are in your session, and scores are never uploaded to leaderboards.
+These mods are made **for single-player/offline only**. Games with online modes switch every cheat off automatically while other players are in your session, and scores are never uploaded to leaderboards.
 This project is not affiliated with or endorsed by any game developer or publisher. All game names and trademarks belong to their owners.
 No game files are included in this repository.
 
