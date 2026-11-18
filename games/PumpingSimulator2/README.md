@@ -1,122 +1,127 @@
 <img src="https://capsule-render.vercel.app/api?type=rect&color=0:00ff4c,100:04140a&height=90&text=Pumping%20Simulator%202&fontColor=ffffff&fontSize=40&fontAlignY=55" width="100%" />
 
 <p align="center">
-  <img src="../../assets/logo.png" width="110" alt="EvilDragon logo" />
+  <a href="README.md"><img src="https://img.shields.io/badge/DE-Deutsch-00ff4c?style=for-the-badge&labelColor=0b1a10" alt="Deutsch" /></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/EN-English-1c2a22?style=for-the-badge&labelColor=0b1a10" alt="English" /></a>
+</p>
+
+<p align="center">
+  <img src="../../assets/logo.png" width="110" alt="EvilDragon Logo" />
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unity-2022.3%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
-  <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/plattform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
 </p>
 
-<p align="center"><b>EvilDragon's Cheats</b> – an in-game cheat menu for <i>Pumping Simulator 2</i>.</p>
+<p align="center"><b>EvilDragon's Cheats</b> – ein Cheat-Menü im Spiel für <i>Pumping Simulator 2</i>.</p>
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
 ## Installation
 
-The installation takes about 5 minutes and only has to be done once.
+Die Installation dauert etwa 5 Minuten und muss nur einmal gemacht werden.
 
-### Step 1 – Open your game folder
+### Schritt 1 – Spielordner öffnen
 
-1. Open **Steam** and go to your **Library**.
-2. Right-click **Pumping Simulator 2** → **Manage** → **Browse local files**.
-3. A folder opens. You should see the file `Pumping Simulator 2.exe` in it. **Keep this folder open.**
+1. Öffne **Steam** und geh in deine **Bibliothek**.
+2. Rechtsklick auf **Pumping Simulator 2** → **Verwalten** → **Lokale Dateien durchsuchen**.
+3. Ein Ordner öffnet sich. Darin siehst du die Datei `Pumping Simulator 2.exe`. **Lass diesen Ordner offen.**
 
-### Step 2 – Install BepInEx 5 (the mod loader)
+### Schritt 2 – BepInEx 5 installieren (der Mod-Loader)
 
-1. Open the BepInEx releases page: <https://github.com/BepInEx/BepInEx/releases>
-2. Find the newest **5.4.x** version (not 6.x!) and download **`BepInEx_win_x64_5.4.xx.zip`**.
-3. Open the ZIP and copy **everything inside it** into your game folder from step 1.
-4. Check: next to `Pumping Simulator 2.exe` there should now be a file `winhttp.dll` and a folder `BepInEx`.
+1. Öffne die BepInEx-Releases: <https://github.com/BepInEx/BepInEx/releases>
+2. Such die neueste **5.4.x**-Version (nicht 6.x!) und lade **`BepInEx_win_x64_5.4.xx.zip`** herunter.
+3. Öffne die ZIP und kopiere **alles darin** in deinen Spielordner aus Schritt 1.
+4. Kontrolle: Neben `Pumping Simulator 2.exe` liegen jetzt die Datei `winhttp.dll` und der Ordner `BepInEx`.
 
-### Step 3 – Start the game once
+### Schritt 3 – Spiel einmal starten
 
-1. Start the game normally through Steam and wait until the main menu appears.
-2. Close the game. BepInEx has now created the folder `BepInEx\plugins`.
+1. Starte das Spiel ganz normal über Steam und warte, bis das Hauptmenü erscheint.
+2. Schließ das Spiel. BepInEx hat jetzt den Ordner `BepInEx\plugins` angelegt.
 
-### Step 4 – Install the cheats
+### Schritt 4 – Cheats installieren
 
-1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-PumpingSimulator2-v1.0.0.zip`**.
-2. Open the ZIP and copy the `BepInEx` folder inside it into your game folder.
-   If Windows asks whether to merge/replace, click **Yes**.
-3. Check: the file `EvilDragon.PumpingSimulator2Cheats.dll` is now in `BepInEx\plugins\`.
+1. Geh auf die [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases)-Seite und lade
+   **`EvilDragons-Cheats-PumpingSimulator2-v1.0.0.zip`** herunter.
+2. Öffne die ZIP und kopiere den Ordner `BepInEx` darin in deinen Spielordner.
+   Wenn Windows fragt, ob zusammengeführt/ersetzt werden soll, klick auf **Ja**.
+3. Kontrolle: Die Datei `EvilDragon.PumpingSimulator2Cheats.dll` liegt jetzt in `BepInEx\plugins\`.
 
-### Step 5 – Play
+### Schritt 5 – Spielen
 
-Start the game, load your save and press **F1**. The menu opens on the left side.
+Starte das Spiel, lade deinen Spielstand und drück **F1**. Das Menü öffnet sich links.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
 ## Features
 
-| Tab | What you can do |
+| Tab | Was du machen kannst |
 |:--|:--|
-| **Player** | Infinite stamina, no hunger & thirst, walk speed up to 5x, jump power up to x3, fly mode with adjustable speed |
-| **Money** | Add or remove money (presets or your own amount), add reputation XP |
-| **Station** | Infinite fuel, fill the tank, workers never get tired, fast delivery, max all upgrades |
-| **World** | Freeze time, set the time to morning / noon / evening / night |
-| **Items** | Spawn anything from the order catalog as a delivery box (1–100 pieces) at your crosshair or in front of you – with categories and search |
-| **Settings** | 6 themes, change hotkeys, Save Settings |
+| **Player** | Unendlich Ausdauer, kein Hunger & Durst, Laufspeed bis 5x, Sprungkraft bis x3, Flugmodus mit einstellbarem Tempo |
+| **Money** | Geld hinzufügen / abziehen (Vorauswahl oder eigener Betrag), Reputation-XP |
+| **Station** | Unendlich Treibstoff, Tank füllen, Arbeiter werden nie müde, schnelle Lieferung, alle Upgrades auf Maximum |
+| **World** | Zeit einfrieren, Uhrzeit auf Morgen / Mittag / Abend / Nacht setzen |
+| **Items** | Alles aus dem Bestellkatalog als Lieferkarton spawnen (1–100 Stück) am Fadenkreuz oder vor dir – mit Kategorien und Suche |
+| **Settings** | 6 Themes, Tasten ändern, Save Settings |
 
 ## Hotkeys
 
-| Key | Action |
+| Taste | Aktion |
 |:--:|:--|
-| <kbd>F1</kbd> | Open / close the menu |
-| <kbd>F2</kbd> | Add the selected money amount |
-| <kbd>F3</kbd> | Fill the station's fuel tank |
-| <kbd>F4</kbd> | Fly mode on / off |
+| <kbd>F1</kbd> | Menü öffnen / schließen |
+| <kbd>F2</kbd> | Ausgewählten Geldbetrag hinzufügen |
+| <kbd>F3</kbd> | Tank der Tankstelle füllen |
+| <kbd>F4</kbd> | Flugmodus an / aus |
 
-You can change every hotkey in the **Settings** tab. While the menu is open, your character stands still, so you don't walk around while clicking.
+Alle Tasten kannst du im Tab **Settings** ändern. Solange das Menü offen ist, bleibt deine Figur stehen – du läufst also nicht herum, während du klickst.
 
-**Searching items:** click the search field and type. Click anywhere else when you are done.
+**Items suchen:** Klick ins Suchfeld und tipp los. Klick irgendwo anders hin, wenn du fertig bist.
 
-**Typing your own number:** click the dark field (e.g. *Custom amount*), type the number and press **Enter**.
+**Eigene Zahl eingeben:** Klick auf das dunkle Feld (z.B. *Custom amount*), tipp die Zahl ein und drück **Enter**.
 
-**Save Settings:** in the *Settings* tab. All cheats you have switched on are switched on again the next time you play.
+**Save Settings:** im Tab *Settings*. Alle eingeschalteten Cheats sind beim nächsten Spielen wieder an.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
-## Problems?
+## Probleme?
 
-| Problem | Solution |
+| Problem | Lösung |
 |:--|:--|
-| No mod loads at all | `winhttp.dll` must be directly next to `Pumping Simulator 2.exe`, not in a subfolder. Make sure you downloaded **BepInEx 5** for **win x64**. |
-| F1 does nothing | Check that `EvilDragon.PumpingSimulator2Cheats.dll` is in `BepInEx\plugins\`. |
-| Something else | Open an [issue](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/issues) and attach `BepInEx\LogOutput.log`. |
+| Keine Mod lädt | `winhttp.dll` muss direkt neben `Pumping Simulator 2.exe` liegen, nicht in einem Unterordner. Achte darauf, dass du **BepInEx 5** für **win x64** geladen hast. |
+| F1 tut nichts | Prüfe, ob `EvilDragon.PumpingSimulator2Cheats.dll` in `BepInEx\plugins\` liegt. |
+| Etwas anderes | Erstell ein [Issue](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/issues) und häng `BepInEx\LogOutput.log` an. |
 
-## Uninstall
+## Deinstallieren
 
-- **Only the cheats:** delete `BepInEx\plugins\EvilDragon.PumpingSimulator2Cheats.dll`.
-- **Everything:** also delete `winhttp.dll`, `doorstop_config.ini`, `.doorstop_version`, `changelog.txt` and the folder `BepInEx` from the game folder.
+- **Nur die Cheats:** lösch `BepInEx\plugins\EvilDragon.PumpingSimulator2Cheats.dll`.
+- **Alles:** lösch zusätzlich `winhttp.dll`, `doorstop_config.ini`, `.doorstop_version`, `changelog.txt` und den Ordner `BepInEx` aus dem Spielordner.
 
-## Notes
+## Hinweise
 
-- Money, reputation, upgrades and spawned items stay in your save.
-- Steam achievements can still unlock while cheats are on.
-- Your settings are stored in `BepInEx\config\evildragon.cheats.pumpingsimulator2.cfg`.
+- Geld, Reputation, Upgrades und gespawnte Items bleiben in deinem Spielstand.
+- Steam-Erfolge können auch mit aktiven Cheats freigeschaltet werden.
+- Deine Einstellungen liegen in `BepInEx\config\evildragon.cheats.pumpingsimulator2.cfg`.
 
 <details>
-<summary><b>Build from source</b> (for developers)</summary>
+<summary><b>Aus dem Quellcode bauen</b> (für Entwickler)</summary>
 
-Requirements: .NET SDK 6.0 or newer, and the game with BepInEx 5 installed.
+Voraussetzungen: .NET SDK 6.0 oder neuer und das Spiel mit installiertem BepInEx 5.
 
 ```powershell
 cd games/PumpingSimulator2/src
-copy GameDir.props.example GameDir.props   # put your game folder path into this file
+copy GameDir.props.example GameDir.props   # trag hier deinen Spielordner ein
 dotnet build -c Release
 ```
 
-The DLL is copied into `BepInEx\plugins` automatically (unless the game is running).
+Die DLL wird automatisch nach `BepInEx\plugins` kopiert (außer das Spiel läuft gerade).
 </details>
 
 ## Changelog
 
 **1.0.0**
-- First release
+- Erste Version
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:04140a,50:00b341,100:00ff4c&height=90&section=footer" width="100%" />

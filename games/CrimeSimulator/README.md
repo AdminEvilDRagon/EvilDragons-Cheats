@@ -1,125 +1,137 @@
 <img src="https://capsule-render.vercel.app/api?type=rect&color=0:00ff4c,100:04140a&height=90&text=Crime%20Simulator&fontColor=ffffff&fontSize=40&fontAlignY=55" width="100%" />
 
 <p align="center">
-  <img src="../../assets/logo.png" width="110" alt="EvilDragon logo" />
+  <a href="README.md"><img src="https://img.shields.io/badge/DE-Deutsch-00ff4c?style=for-the-badge&labelColor=0b1a10" alt="Deutsch" /></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/EN-English-1c2a22?style=for-the-badge&labelColor=0b1a10" alt="English" /></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
-  <img src="https://img.shields.io/badge/Unity-2022.3%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
-  <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
-  <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
+  <img src="../../assets/logo.png" width="110" alt="EvilDragon Logo" />
 </p>
 
-<p align="center"><b>EvilDragon's Cheats</b> – an in-game cheat menu for <i>Crime Simulator</i>.</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/Unity-2022.3%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/plattform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
+</p>
 
-> **Single-player only.** Crime Simulator has online co-op. As soon as another player is in your session, every cheat switches itself off automatically. Scores are never uploaded to Steam leaderboards while the mod is installed.
+<p align="center"><b>EvilDragon's Cheats</b> – ein Cheat-Menü im Spiel für <i>Crime Simulator</i>.</p>
+
+> **Nur Einzelspieler.** Crime Simulator hat Online-Koop. Sobald ein anderer Spieler in deiner Sitzung ist, schalten sich alle Cheats automatisch ab. Solange die Mod installiert ist, werden nie Ergebnisse in Steam-Bestenlisten hochgeladen.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
 ## Installation
 
-The installation takes about 5 minutes and only has to be done once.
+Die Installation dauert etwa 5 Minuten und muss nur einmal gemacht werden.
 
-### Step 1 – Open your game folder
+### Schritt 1 – Spielordner öffnen
 
-1. Open **Steam** and go to your **Library**.
-2. Right-click **Crime Simulator** → **Manage** → **Browse local files**.
-3. A folder opens. You should see the file `Crime Simulator.exe` in it. **Keep this folder open.**
+1. Öffne **Steam** und geh in deine **Bibliothek**.
+2. Rechtsklick auf **Crime Simulator** → **Verwalten** → **Lokale Dateien durchsuchen**.
+3. Ein Ordner öffnet sich. Darin siehst du die Datei `Crime Simulator.exe`. **Lass diesen Ordner offen.**
 
-### Step 2 – Install BepInEx 5 (the mod loader)
+### Schritt 2 – BepInEx 5 installieren (der Mod-Loader)
 
-1. Open the BepInEx releases page: <https://github.com/BepInEx/BepInEx/releases>
-2. Find the newest **5.4.x** version (not 6.x!) and download **`BepInEx_win_x64_5.4.xx.zip`**.
-3. Open the ZIP and copy **everything inside it** into your game folder from step 1.
-4. Check: next to `Crime Simulator.exe` there should now be a file `winhttp.dll` and a folder `BepInEx`.
+1. Öffne die BepInEx-Releases: <https://github.com/BepInEx/BepInEx/releases>
+2. Such die neueste **5.4.x**-Version (nicht 6.x!) und lade **`BepInEx_win_x64_5.4.xx.zip`** herunter.
+3. Öffne die ZIP und kopiere **alles darin** in deinen Spielordner aus Schritt 1.
+4. Kontrolle: Neben `Crime Simulator.exe` liegen jetzt die Datei `winhttp.dll` und der Ordner `BepInEx`.
 
-### Step 3 – Start the game once
+### Schritt 3 – Spiel einmal starten
 
-1. Start the game normally through Steam and wait until the main menu appears.
-2. Close the game. BepInEx has now created the folder `BepInEx\plugins`.
+1. Starte das Spiel ganz normal über Steam und warte, bis das Hauptmenü erscheint.
+2. Schließ das Spiel. BepInEx hat jetzt den Ordner `BepInEx\plugins` angelegt.
 
-### Step 4 – Install the cheats
+### Schritt 4 – Cheats installieren
 
-1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-CrimeSimulator-v1.0.0.zip`**.
-2. Open the ZIP and copy the `BepInEx` folder inside it into your game folder.
-   If Windows asks whether to merge/replace, click **Yes**.
-3. Check: the file `EvilDragon.CrimeSimulatorCheats.dll` is now in `BepInEx\plugins\`.
+1. Geh auf die [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases)-Seite und lade
+   **`EvilDragons-Cheats-CrimeSimulator-v1.1.0.zip`** herunter (nimm immer die neueste Version).
+2. Öffne die ZIP und kopiere den Ordner `BepInEx` darin in deinen Spielordner.
+   Wenn Windows fragt, ob zusammengeführt/ersetzt werden soll, klick auf **Ja**.
+3. Kontrolle: Die Datei `EvilDragon.CrimeSimulatorCheats.dll` liegt jetzt in `BepInEx\plugins\`.
 
-### Step 5 – Play
+### Schritt 5 – Spielen
 
-Start the game, load a **single-player** save and press **F1**. The menu opens on the left side.
+Starte das Spiel, lade einen **Einzelspieler**-Spielstand und drück **F1**. Das Menü öffnet sich links.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
 ## Features
 
-| Tab | What you can do |
+| Tab | Was du machen kannst |
 |:--|:--|
-| **Player** | God mode, infinite stamina, full heal, walk speed up to 5x |
-| **Stealth** | No police, call off the cops, undetectable, silent (no noise), no heat |
-| **Gear** | No durability loss, infinite ammo, repair all items, damage up to one-hit, range up to x5, no attack cooldown, faster attacks, no attack stamina, instant lockpick, unbreakable lockpicks |
-| **Money** | Add or remove money (presets or your own amount), add XP, add skill points |
-| **Items** | Spawn any item (weapons, ammo, tools, loot, money …) at your crosshair or in front of you – with categories, search and amount |
-| **Settings** | 6 themes, change hotkeys, Save Settings |
+| **Player** | Godmode, unendlich Ausdauer, voll heilen, Laufspeed bis 5x |
+| **Stealth** | Keine Polizei, Polizei abziehen lassen, unentdeckbar, lautlos (keine Geräusche), keine Heat |
+| **Gear** | Keine Abnutzung, unendlich Munition, alles reparieren, Schaden bis One-Hit, Reichweite bis x5, kein Angriffs-Cooldown, schnellere Angriffe, Angriffe ohne Ausdauer, Schlösser sofort offen, unzerbrechliche Dietriche |
+| **Money** | Geld hinzufügen / abziehen (Vorauswahl oder eigener Betrag), XP, Skillpunkte |
+| **Items** | Jedes Item spawnen (Waffen, Munition, Werkzeuge, Skill-Bücher, Beute, Geld …) am Fadenkreuz oder vor dir – mit Kategorien, Suche und Anzahl. **Heist Plans:** ein Klick spawnt alles, was ein Überfall braucht (z.B. den Plan für den Bahnhof) |
+| **Settings** | 6 Themes, Tasten ändern, Save Settings |
 
 ## Hotkeys
 
-| Key | Action |
+| Taste | Aktion |
 |:--:|:--|
-| <kbd>F1</kbd> | Open / close the menu |
-| <kbd>F2</kbd> | Full heal |
-| <kbd>F3</kbd> | Call off the cops |
-| <kbd>F4</kbd> | Add the selected money amount |
+| <kbd>F1</kbd> | Menü öffnen / schließen |
+| <kbd>F2</kbd> | Voll heilen |
+| <kbd>F3</kbd> | Polizei abziehen lassen |
+| <kbd>F4</kbd> | Ausgewählten Geldbetrag hinzufügen |
 
-You can change every hotkey in the **Settings** tab. While the menu is open, your character stands still (like in the pause menu), so you don't shoot or walk while clicking.
+Alle Tasten kannst du im Tab **Settings** ändern. Solange das Menü offen ist, bleibt deine Figur stehen (wie im Pausemenü) – du schießt und läufst also nicht, während du klickst.
 
-**Searching items:** click the search field and type. Click anywhere else when you are done.
+**Items suchen:** Klick ins Suchfeld und tipp los. Klick irgendwo anders hin, wenn du fertig bist.
 
-**Typing your own number:** click the dark field (e.g. *Custom amount*), type the number and press **Enter**.
+**Überfall-Pläne:** Der Überfall prüft, ob die Gegenstände **in deinem Inventar oder im Truck** sind. Heb sie nach dem Spawnen also auf oder leg sie in den Truck.
 
-**Save Settings:** in the *Settings* tab. All cheats you have switched on are switched on again the next time you play.
+**Eigene Zahl eingeben:** Klick auf das dunkle Feld (z.B. *Custom amount*), tipp die Zahl ein und drück **Enter**.
+
+**Save Settings:** im Tab *Settings*. Alle eingeschalteten Cheats sind beim nächsten Spielen wieder an.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
-## Problems?
+## Probleme?
 
-| Problem | Solution |
+| Problem | Lösung |
 |:--|:--|
-| No mod loads at all | `winhttp.dll` must be directly next to `Crime Simulator.exe`, not in a subfolder. Make sure you downloaded **BepInEx 5** for **win x64**. |
-| F1 does nothing | Check that `EvilDragon.CrimeSimulatorCheats.dll` is in `BepInEx\plugins\`. |
-| Menu says "cheats are disabled" | You are in an online session with other players. Play single-player or alone. |
-| Something else | Open an [issue](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/issues) and attach `BepInEx\LogOutput.log`. |
+| Keine Mod lädt | `winhttp.dll` muss direkt neben `Crime Simulator.exe` liegen, nicht in einem Unterordner. Achte darauf, dass du **BepInEx 5** für **win x64** geladen hast. |
+| F1 tut nichts | Prüfe, ob `EvilDragon.CrimeSimulatorCheats.dll` in `BepInEx\plugins\` liegt. |
+| Menü sagt „cheats are disabled“ | Du bist in einer Online-Sitzung mit anderen Spielern. Spiel im Einzelspieler oder allein. |
+| Etwas anderes | Erstell ein [Issue](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/issues) und häng `BepInEx\LogOutput.log` an. |
 
-## Uninstall
+## Deinstallieren
 
-- **Only the cheats:** delete `BepInEx\plugins\EvilDragon.CrimeSimulatorCheats.dll`.
-- **Everything:** also delete `winhttp.dll`, `doorstop_config.ini`, `.doorstop_version`, `changelog.txt` and the folder `BepInEx` from the game folder.
+- **Nur die Cheats:** lösch `BepInEx\plugins\EvilDragon.CrimeSimulatorCheats.dll`.
+- **Alles:** lösch zusätzlich `winhttp.dll`, `doorstop_config.ini`, `.doorstop_version`, `changelog.txt` und den Ordner `BepInEx` aus dem Spielordner.
 
-## Notes
+## Hinweise
 
-- Money, XP, skill points, ammo and spawned items you get with cheats stay in your save.
-- Steam achievements can still unlock while cheats are on.
-- Your settings are stored in `BepInEx\config\evildragon.cheats.crimesimulator.cfg`.
+- Geld, XP, Skillpunkte, Munition und gespawnte Items, die du mit Cheats bekommst, bleiben in deinem Spielstand.
+- Steam-Erfolge können auch mit aktiven Cheats freigeschaltet werden.
+- Deine Einstellungen liegen in `BepInEx\config\evildragon.cheats.crimesimulator.cfg`.
 
 <details>
-<summary><b>Build from source</b> (for developers)</summary>
+<summary><b>Aus dem Quellcode bauen</b> (für Entwickler)</summary>
 
-Requirements: .NET SDK 6.0 or newer, and the game with BepInEx 5 installed.
+Voraussetzungen: .NET SDK 6.0 oder neuer und das Spiel mit installiertem BepInEx 5.
 
 ```powershell
 cd games/CrimeSimulator/src
-copy GameDir.props.example GameDir.props   # put your game folder path into this file
+copy GameDir.props.example GameDir.props   # trag hier deinen Spielordner ein
 dotnet build -c Release
 ```
 
-The DLL is copied into `BepInEx\plugins` automatically (unless the game is running).
+Die DLL wird automatisch nach `BepInEx\plugins` kopiert (außer das Spiel läuft gerade).
 </details>
 
 ## Changelog
 
+**1.1.0**
+- Heist Plans: die Gegenstände für einen Überfall mit einem Klick spawnen
+- Neue Item-Kategorien *Skills* (Skill-Bücher) und *Plans*
+- Mehr Items werden gefunden (z.B. alle Skill-Bücher)
+
 **1.0.0**
-- First release
+- Erste Version
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:04140a,50:00b341,100:00ff4c&height=90&section=footer" width="100%" />

@@ -15,7 +15,7 @@ namespace CrimeSimulatorCheats;
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "evildragon.cheats.crimesimulator";
-    public const string Version = "1.0.0";
+    public const string Version = "1.1.0";
 
     internal static ManualLogSource L;
     internal static ConfigFile Cfg;
@@ -184,41 +184,90 @@ public class CheatMenu : MonoBehaviour
     int itemPage, spawnCount = 1;
     bool spawnAtCrosshair = true;
     ItemEntry selectedItem;
-    static readonly string[] Categories = { "All", "Weapons", "Ammo", "Tools", "Loot", "Money", "Other" };
+    static readonly string[] Categories = { "All", "Weapons", "Ammo", "Tools", "Skills", "Plans", "Loot", "Money", "Other" };
     static readonly int[] SpawnCounts = { 1, 5, 10, 25 };
     const int PageSize = 10;
 
-    static string Category(Item i)
+    // heist plans: items that a location requires before you can rob it
+    class HeistPlan { public string Location; public List<Item> Items; }
+    List<HeistPlan> heistPlans = new();
+    HashSet<Item> planItems = new();
+
+    string Category(Item i)
     {
+        if (planItems.Contains(i)) return "Plans";
+        if (i.isSkillBook) return "Skills";
         if (i.isWeapon) return "Weapons";
         if (i.isAmmo) return "Ammo";
         if (i.isMoney || i.isCreditCard || i.isGoldenCard) return "Money";
         if (i.isLoot || i.isJewelry) return "Loot";
-        if (i.isKey || i.isAccessCard || i.isDrone || i.isFirstAid || i.isArmorVest || i.isSkillBook || i.isItemUpgrade || i.isCarFuel) return "Tools";
+        if (i.isKey || i.isAccessCard || i.isDrone || i.isFirstAid || i.isArmorVest || i.isItemUpgrade || i.isCarFuel) return "Tools";
         return "Other";
     }
 
     static string DisplayName(Item i)
     {
         string n = null;
-        try { if (!string.IsNullOrEmpty(i.itemName)) n = I2.Loc.LocalizationManager.GetTranslation(i.itemName); } catch { }
-        if (string.IsNullOrEmpty(n)) n = !string.IsNullOrEmpty(i.itemName) ? i.itemName : i.name;
-        if (!string.IsNullOrEmpty(i.itemNameExtra)) n += " " + i.itemNameExtra;
+        try { n = i.GetItemName(); } catch { }
+        if (string.IsNullOrEmpty(n))
+        {
+            try { if (!string.IsNullOrEmpty(i.itemName)) n = I2.Loc.LocalizationManager.GetTranslation(i.itemName); } catch { }
+            if (string.IsNullOrEmpty(n)) n = !string.IsNullOrEmpty(i.itemName) ? i.itemName : i.name;
+            if (!string.IsNullOrEmpty(i.itemNameExtra)) n += " " + i.itemNameExtra;
+        }
         return n;
     }
 
+    static string LocationName(Location l)
+    {
+        string n = l.locationName;
+        if (l.translateLocationName) try { var t = I2.Loc.LocalizationManager.GetTranslation(l.locationName); if (!string.IsNullOrEmpty(t)) n = t; } catch { }
+        return n;
+    }
+
+    static bool CanSpawn(Item i) => i != null && i.itemDropPrefab != null && i.itemDropPrefab.GetComponent<Fusion.NetworkObject>() != null;
+
+    bool loggedSkipped;
     void ScanItems()
     {
         itemsScannedAt = Time.unscaledTime;
-        var seen = new HashSet<string>();
-        var list = new List<ItemEntry>();
-        foreach (var i in Resources.FindObjectsOfTypeAll<Item>())
+
+        // every place the game keeps item lists, not only what happens to be loaded right now
+        var all = new List<Item>();
+        all.AddRange(Resources.FindObjectsOfTypeAll<Item>());
+        try { if (Computer.Instance != null && Computer.Instance.itemScripts != null) all.AddRange(Computer.Instance.itemScripts); } catch { }
+
+        heistPlans = new List<HeistPlan>();
+        planItems = new HashSet<Item>();
+        try
         {
-            if (i == null || i.itemDropPrefab == null || i.itemDropPrefab.GetComponent<Fusion.NetworkObject>() == null) continue;
-            if (!seen.Add(i.name)) continue;
+            if (Game.WM != null && Game.WM.locations != null)
+                foreach (var loc in Game.WM.locations)
+                {
+                    if (loc == null || !loc.requireItems || loc.requiredItems == null || loc.requiredItems.Count == 0) continue;
+                    var req = loc.requiredItems.Where(x => x != null).ToList();
+                    heistPlans.Add(new HeistPlan { Location = LocationName(loc), Items = req });
+                    foreach (var it in req) { planItems.Add(it); all.Add(it); }
+                }
+        }
+        catch { }
+
+        var seen = new HashSet<int>();   // by instance, several items can share an asset name
+        var list = new List<ItemEntry>();
+        var skipped = new List<string>();
+        foreach (var i in all)
+        {
+            if (i == null || !seen.Add(i.GetInstanceID())) continue;
+            if (!CanSpawn(i)) { skipped.Add(i.name); continue; }
             list.Add(new ItemEntry { Item = i, Name = DisplayName(i), Category = Category(i) });
         }
         items = list.OrderBy(e => e.Category).ThenBy(e => e.Name).ToList();
+
+        if (!loggedSkipped && skipped.Count > 0)
+        {
+            loggedSkipped = true;
+            Plugin.L.LogInfo($"{list.Count} spawnable items, {skipped.Count} without a drop prefab: {string.Join(", ", skipped.Take(40))}");
+        }
     }
 
     long moneyAmount = 10_000, xpAmount = 1_000;
@@ -678,8 +727,24 @@ public class CheatMenu : MonoBehaviour
         spawnCount = Ui.Chips(spawnCount, SpawnCounts, v => v + "x", 4);
         Ui.EndCard();
 
+        if (heistPlans.Count > 0)
+        {
+            Ui.BeginCard("Heist Plans", "Spawns what a robbery needs – pick it up or put it in your truck");
+            for (int i = 0; i < heistPlans.Count; i += 2)
+            {
+                GUILayout.BeginHorizontal();
+                for (int k = i; k < Math.Min(i + 2, heistPlans.Count); k++)
+                {
+                    var hp = heistPlans[k];
+                    if (Ui.Button(hp.Location, Ui.Chip)) SpawnPlan(hp);
+                }
+                GUILayout.EndHorizontal();
+            }
+            Ui.EndCard();
+        }
+
         Ui.BeginCard("Browse Items");
-        string cat = Ui.Chips(itemCategory, Categories, c => c, 4);
+        string cat = Ui.Chips(itemCategory, Categories, c => c, 5);
         if (cat != itemCategory) { itemCategory = cat; itemPage = 0; }
 
         // search box: typed letters come from Input.inputString while it is active
@@ -747,6 +812,20 @@ public class CheatMenu : MonoBehaviour
         var flat = fwd; flat.y = 0; if (flat.sqrMagnitude < 0.01f) flat = Vector3.forward; flat.Normalize();
         var right = Vector3.Cross(Vector3.up, flat);
         return center + right * ((i % perRow - (perRow - 1) / 2f) * 0.45f) + flat * ((i / perRow) * 0.45f) + Vector3.up * (i * 0.02f);
+    }
+
+    void SpawnPlan(HeistPlan hp)
+    {
+        if (!Check()) return;
+        int ok = 0;
+        var spawnable = hp.Items.Where(CanSpawn).ToList();
+        for (int i = 0; i < spawnable.Count; i++)
+        {
+            try { if (Game.WM.Runner.Spawn(spawnable[i].itemDropPrefab, SpawnPoint(i, spawnable.Count), Quaternion.identity) != null) ok++; }
+            catch (Exception ex) { Plugin.L.LogError(ex); }
+        }
+        if (ok == 0) SetStatus($"Could not spawn the plan for {hp.Location} - see log");
+        else SetStatus($"Spawned plan for {hp.Location}: " + string.Join(", ", spawnable.Select(DisplayName)));
     }
 
     void SpawnItem(ItemEntry e, int count)

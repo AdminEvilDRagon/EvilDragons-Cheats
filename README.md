@@ -1,69 +1,71 @@
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00ff4c,50:00b341,100:04140a&height=200&section=header&text=EvilDragon%27s%20Cheats&fontColor=ffffff&fontSize=52&fontAlignY=36&desc=Clean%20in-game%20cheat%20menus%20for%20single-player%20games&descAlignY=58&descSize=16" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00ff4c,50:00b341,100:04140a&height=200&section=header&text=EvilDragon%27s%20Cheats&fontColor=ffffff&fontSize=52&fontAlignY=36&desc=Saubere%20Cheat-Men%C3%BCs%20f%C3%BCr%20Einzelspieler-Spiele&descAlignY=58&descSize=16" width="100%" />
 
 <p align="center">
-  <img src="assets/logo.png" width="160" alt="EvilDragon logo" />
+  <a href="README.md"><img src="https://img.shields.io/badge/DE-Deutsch-00ff4c?style=for-the-badge&labelColor=0b1a10" alt="Deutsch" /></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/EN-English-1c2a22?style=for-the-badge&labelColor=0b1a10" alt="English" /></a>
+</p>
+
+<p align="center">
+  <img src="assets/logo.png" width="160" alt="EvilDragon Logo" />
 </p>
 
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
-  <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10" /></a>
-  <img src="https://img.shields.io/badge/games-3-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
-  <img src="https://img.shields.io/badge/single--player-only-ffb300?style=for-the-badge&labelColor=0b1a10" />
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
+  <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10&label=downloads" /></a>
+  <img src="https://img.shields.io/badge/spiele-3-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/nur-einzelspieler-ffb300?style=for-the-badge&labelColor=0b1a10" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/lizenz-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
-## Games
+## Spiele
 
-| Game | Version | Download | Guide |
+| Spiel | Version | Download | Anleitung |
 |:--|:--:|:--|:--|
-| **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CanEmAll) |
-| **Crime Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CrimeSimulator) |
-| **Pumping Simulator 2** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/PumpingSimulator2) |
+| **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/CanEmAll) |
+| **Crime Simulator** | `1.1.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/CrimeSimulator) |
+| **Pumping Simulator 2** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/PumpingSimulator2) |
 
-More games will be added over time. Each game has its own folder under [`games/`](games) with its own install guide.
+Weitere Spiele kommen mit der Zeit dazu. Jedes Spiel hat einen eigenen Ordner unter [`games/`](games) mit eigener Anleitung.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
-## How it works
+## So funktioniert's
 
-The cheats are a small mod file (a `.dll`) that is loaded into the game by a free mod loader called **BepInEx**.
-You install BepInEx once, put the mod file into it, start the game and press **F1** to open the menu.
+Die Cheats sind eine kleine Mod-Datei (eine `.dll`), die von einem kostenlosen Mod-Loader namens **BepInEx** ins Spiel geladen wird.
+Du installierst BepInEx einmal, legst die Mod-Datei hinein, startest das Spiel und drückst **F1**, um das Menü zu öffnen.
 
-The exact steps are different for every game, so always follow the guide of your game in the table above.
+Die genauen Schritte sind bei jedem Spiel etwas anders, folge deshalb immer der Anleitung deines Spiels in der Tabelle oben.
 
-## Every menu has
+## Jedes Menü hat
 
 - **Themes** – Dragon, Neon, Inferno, Ocean, Purple, Gold
-- **Hotkeys** – use the most important cheats without opening the menu (can be changed)
-- **Save Settings** – your cheats are switched on again the next time you play
-- **No changes until you want them** – nothing happens until you turn a cheat on, your game files stay untouched
+- **Hotkeys** – die wichtigsten Cheats nutzen, ohne das Menü zu öffnen (änderbar)
+- **Save Settings** – deine Cheats sind beim nächsten Spielen automatisch wieder an
+- **Keine Änderung ohne dich** – nichts passiert, bis du einen Cheat einschaltest, deine Spieldateien bleiben unverändert
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 
-## Repository layout
+## Aufbau des Repositorys
 
 ```
 EvilDragons-Cheats/
-├── assets/                 logo & images
-├── shared/                 menu design used by every game (themes, logo, buttons)
+├── assets/                 Logo & Bilder
+├── shared/                 Menü-Design für alle Spiele (Themes, Logo, Buttons)
 └── games/
     ├── CanEmAll/
-    │   ├── README.md       install guide, features, hotkeys
-    │   └── src/            source code (C#)
+    │   ├── README.md       Anleitung (Deutsch)
+    │   ├── README.en.md    Anleitung (Englisch)
+    │   └── src/            Quellcode (C#)
     ├── CrimeSimulator/
-    │   ├── README.md
-    │   └── src/
     └── PumpingSimulator2/
-        ├── README.md
-        └── src/
 ```
 
-## Disclaimer
+## Hinweis
 
-These mods are made **for single-player/offline only**. Games with online modes switch every cheat off automatically while other players are in your session, and scores are never uploaded to leaderboards.
-This project is not affiliated with or endorsed by any game developer or publisher. All game names and trademarks belong to their owners.
-No game files are included in this repository.
+Diese Mods sind **nur für Einzelspieler / offline** gedacht. Spiele mit Online-Modus schalten jeden Cheat automatisch ab, sobald andere Spieler in deiner Sitzung sind, und es werden nie Ergebnisse in Bestenlisten hochgeladen.
+Dieses Projekt steht in keiner Verbindung zu den Entwicklern oder Publishern der Spiele. Alle Spielnamen und Marken gehören ihren Inhabern.
+Dieses Repository enthält keine Spieldateien.
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:04140a,50:00b341,100:00ff4c&height=110&section=footer" width="100%" />
