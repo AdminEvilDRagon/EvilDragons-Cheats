@@ -15,11 +15,11 @@ namespace CrimeSimulatorCheats;
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "evildragon.cheats.crimesimulator";
-    public const string Version = "1.1.0";
+    public const string Version = "1.2.0";
 
     internal static ManualLogSource L;
     internal static ConfigFile Cfg;
-    internal static ConfigEntry<KeyCode> KeyMenu, KeyHeal, KeyCops, KeyMoney;
+    internal static ConfigEntry<KeyCode> KeyMenu, KeyHeal, KeyCops, KeyMoney, KeyTeleport, KeyKillAll;
     internal static ConfigEntry<string> Theme;
 
     void Awake()
@@ -30,6 +30,8 @@ public class Plugin : BaseUnityPlugin
         KeyHeal = Config.Bind("Hotkeys", "Heal", KeyCode.F2, "Full heal");
         KeyCops = Config.Bind("Hotkeys", "CallOffCops", KeyCode.F3, "Call off the police");
         KeyMoney = Config.Bind("Hotkeys", "AddMoney", KeyCode.F4, "Add the selected money amount");
+        KeyTeleport = Config.Bind("Hotkeys", "TeleportToCrosshair", KeyCode.F5, "Teleport to where you aim");
+        KeyKillAll = Config.Bind("Hotkeys", "KillAllNPCs", KeyCode.F6, "Kill all NPCs");
         Theme = Config.Bind("Interface", "Theme", "Dragon", "Menu theme: " + string.Join(", ", Ui.ThemeNames));
         Ui.InitialTheme = Theme.Value;
         Ui.Log = m => Logger.LogWarning(m);
@@ -91,6 +93,27 @@ public static class Patches
     // ---- God mode
     [HarmonyPrefix, HarmonyPatch(typeof(FPP_Player), nameof(FPP_Player.DealDamageToPlayer))]
     static bool NoDamage(FPP_Player __instance) => !(CheatMenu.GodMode && __instance == Game.Me && Game.Allowed);
+
+    // ---- God mode also covers the police taser and sleep darts (they bypass normal damage)
+    [HarmonyPrefix, HarmonyPatch(typeof(FPP_Player), nameof(FPP_Player.RPC_Tazed))]
+    static bool NoTaser(FPP_Player __instance) => !(CheatMenu.GodMode && __instance == Game.Me && Game.Allowed);
+
+    [HarmonyPrefix, HarmonyPatch(typeof(FPP_Player), nameof(FPP_Player.DealSleepiness))]
+    static bool NoSleepDarts(FPP_Player __instance) => !(CheatMenu.GodMode && __instance == Game.Me && Game.Allowed);
+
+    [HarmonyPrefix, HarmonyPatch(typeof(FPP_Player), nameof(FPP_Player.PlayerDeath))]
+    static bool NoDeath(FPP_Player __instance) => !(CheatMenu.GodMode && __instance == Game.Me && Game.Allowed);
+
+    // ---- World border: the sniper that kills you when you leave the map
+    [HarmonyPrefix, HarmonyPatch(typeof(BoundsSniper), "Update")]
+    static void NoBorderSniper(BoundsSniper __instance)
+    {
+        if (CheatMenu.NoWorldBorder && Game.Allowed && __instance.playerToKill == Game.Me) __instance.killedPlayer = true;
+    }
+
+    // ---- Immune to pepper spray
+    [HarmonyPrefix, HarmonyPatch(typeof(FPP_Player), nameof(FPP_Player.GotPepperSprayed))]
+    static bool NoPepper(FPP_Player __instance) => !(CheatMenu.NoPepperSpray && __instance == Game.Me && Game.Allowed);
 
     // ---- Speed
     [HarmonyPostfix, HarmonyPatch(typeof(ECM.Controllers.BaseFirstPersonController), "forwardSpeed", MethodType.Getter)]
@@ -157,14 +180,44 @@ public static class Patches
 
 public class CheatMenu : MonoBehaviour
 {
+    public static bool NoPepperSpray, NoWorldBorder;
     public static bool GodMode, NoPolice, NoHeat, Unbreakable, InstantLockpick, NoDurability, RapidFire;
     public static float SpeedMult = 1f;
 
-    bool show, infStamina, undetectable, silent, infAmmo, noAttackStamina;
+    bool show, infStamina, undetectable, silent, infAmmo, noAttackStamina, fuseHelper;
+
+    // fuse minigame helper: the game shuffles the fuse list on start – that shuffled list is the solution
+    FuseMinigame activeFuse;
+    float fuseScanAt;
+
+    void DrawFuseOverlay()
+    {
+        if (Time.unscaledTime >= fuseScanAt)
+        {
+            fuseScanAt = Time.unscaledTime + 0.25f;
+            activeFuse = FindObjectOfType<FuseMinigame>();
+        }
+        var mg = activeFuse;
+        if (mg == null || mg.fuses == null || mg.mainCam == null) return;
+
+        Ui.Init();
+        for (int i = 0; i < mg.fuses.Count; i++)
+        {
+            var f = mg.fuses[i];
+            if (f == null || f.isTakenOff) continue;
+            var sp = mg.mainCam.WorldToScreenPoint(f.transform.position);
+            if (sp.z < 0f) continue;
+            bool next = i == mg.currentFuseIndex;
+            float size = next ? 46f : 34f;
+            var rect = new Rect(sp.x - size / 2f, Screen.height - sp.y - size / 2f, size, size);
+            var style = Ui.Styled ? (next ? Ui.ChipOn : Ui.KeyCap) : GUI.skin.box;
+            GUI.Label(rect, (i + 1).ToString(), style);
+        }
+    }
     float damageMult = 1f, rangeMult = 1f, attackSpeed = 1f;
     int tab;
     string lastGuiError;
-    static readonly string[] Tabs = { "Player", "Stealth", "Gear", "Money", "Items", "Settings" };
+    static readonly string[] Tabs = { "Player", "Stealth", "Gear", "Money", "Items", "NPCs", "Teleport", "Settings" };
 
     static readonly float[] DamagePresets = { 1f, 2f, 5f, 10f, 100f };
     static readonly float[] RangePresets = { 1f, 1.5f, 2f, 3f, 5f };
@@ -181,6 +234,7 @@ public class CheatMenu : MonoBehaviour
     string itemCategory = "All", search = "";
     bool searching;
     int searchFieldClickFrame = -1, searchCloseCheckFrame = -1;
+    bool searchAllSelected;
     int itemPage, spawnCount = 1;
     bool spawnAtCrosshair = true;
     ItemEntry selectedItem;
@@ -316,6 +370,9 @@ public class CheatMenu : MonoBehaviour
         silent = Saved.Get("Silent", false);
         Unbreakable = Saved.Get("UnbreakableLockpicks", false);
         InstantLockpick = Saved.Get("InstantLockpick", false);
+        fuseHelper = Saved.Get("FuseOrder", false);
+        NoPepperSpray = Saved.Get("ImmuneToPepperSpray", false);
+        NoWorldBorder = Saved.Get("NoWorldBorder", false);
         moneyAmount = Saved.Get("MoneyAmount", 10_000L);
         NoDurability = Saved.Get("NoDurabilityLoss", false);
         infAmmo = Saved.Get("InfiniteAmmo", false);
@@ -337,6 +394,9 @@ public class CheatMenu : MonoBehaviour
         Saved.Set("Silent", silent);
         Saved.Set("UnbreakableLockpicks", Unbreakable);
         Saved.Set("InstantLockpick", InstantLockpick);
+        Saved.Set("FuseOrder", fuseHelper);
+        Saved.Set("ImmuneToPepperSpray", NoPepperSpray);
+        Saved.Set("NoWorldBorder", NoWorldBorder);
         Saved.Set("MoneyAmount", moneyAmount);
         Saved.Set("NoDurabilityLoss", NoDurability);
         Saved.Set("InfiniteAmmo", infAmmo);
@@ -378,6 +438,8 @@ public class CheatMenu : MonoBehaviour
             if (Input.GetKeyDown(Plugin.KeyHeal.Value)) Heal();
             if (Input.GetKeyDown(Plugin.KeyCops.Value)) CallOffCops();
             if (Input.GetKeyDown(Plugin.KeyMoney.Value)) AddMoney(moneyAmount);
+            if (Input.GetKeyDown(Plugin.KeyTeleport.Value)) TeleportToCrosshair();
+            if (Input.GetKeyDown(Plugin.KeyKillAll.Value)) KillAllNpcs();
         }
 
         try { Tick(); } catch (Exception e) { Plugin.L.LogError(e); }
@@ -396,6 +458,14 @@ public class CheatMenu : MonoBehaviour
         bool allowed = Game.Allowed;
 
         if (infStamina && allowed) me.currentStamina = me.maxStamina;
+        if (GodMode && allowed && me.sleepiness > 0f) me.sleepiness = 0f;
+
+        // no world border: the leave-the-map countdown never starts
+        if (NoWorldBorder && allowed && (me.showMapExitWarning || me.amountOfExitTriggers > 0))
+        {
+            me.showMapExitWarning = false;
+            me.amountOfExitTriggers = 0;
+        }
 
         // When another player joins, put the changed values back right away.
         if (undetectable && allowed)
@@ -550,6 +620,8 @@ public class CheatMenu : MonoBehaviour
     // ---------------- GUI ----------------
     void OnGUI()
     {
+        if (fuseHelper && Game.Allowed)
+            try { DrawFuseOverlay(); } catch (Exception e) { var m = e.ToString(); if (m != lastGuiError) { lastGuiError = m; Plugin.L.LogError(e); } }
         if (!show) return;
         Ui.Init();
         bool areaOpen = false;
@@ -585,6 +657,10 @@ public class CheatMenu : MonoBehaviour
         Ui.KeyHint(Plugin.KeyHeal.Value.ToString(), "Heal");
         Ui.KeyHint(Plugin.KeyCops.Value.ToString(), "Lose cops");
         Ui.KeyHint(Plugin.KeyMoney.Value.ToString(), "+ Money");
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        Ui.KeyHint(Plugin.KeyTeleport.Value.ToString(), "Teleport");
+        Ui.KeyHint(Plugin.KeyKillAll.Value.ToString(), "Kill all");
         Ui.KeyHint(Plugin.KeyMenu.Value.ToString(), "Menu");
         GUILayout.EndHorizontal();
         Ui.Space(4);
@@ -596,7 +672,10 @@ public class CheatMenu : MonoBehaviour
 
         GUILayout.BeginHorizontal();
         for (int i = 0; i < Tabs.Length; i++)
+        {
+            if (i == 4) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }   // two rows of tabs
             if (Ui.Button(Tabs[i], i == tab ? Ui.TabOn : Ui.Tab)) { tab = i; editId = null; rebinding = null; searching = false; }
+        }
         GUILayout.EndHorizontal();
         Ui.Space(4);
 
@@ -607,7 +686,9 @@ public class CheatMenu : MonoBehaviour
             case 2: DrawGear(); break;
             case 3: DrawMoney(); break;
             case 4: DrawItems(); break;
-            case 5: DrawSettings(); break;
+            case 5: DrawNpcs(); break;
+            case 6: DrawTeleport(); break;
+            case 7: DrawSettings(); break;
         }
 
         if (status.Length > 0 && Time.unscaledTime - statusTime < 6f)
@@ -637,6 +718,14 @@ public class CheatMenu : MonoBehaviour
     {
         Ui.BeginCard("Health", "Stay alive no matter what");
         Ui.Toggle2(ref GodMode, "God Mode", ref infStamina, "Infinite Stamina");
+        Ui.Label("God Mode also protects you from police tasers, sleep darts and the sniper.", Ui.Sub);
+        NoWorldBorder = Ui.Toggle(NoWorldBorder, "No World Border", "leave the map without dying");
+        bool pep = Ui.Toggle(NoPepperSpray, "Immune to Pepper Spray", "no blinding effect");
+        if (pep != NoPepperSpray)
+        {
+            NoPepperSpray = pep;
+            if (pep) ClearPepper();
+        }
         if (Ui.Button($"Full Heal  [{Plugin.KeyHeal.Value}]", Ui.Primary)) Heal();
         Ui.EndCard();
 
@@ -682,8 +771,9 @@ public class CheatMenu : MonoBehaviour
         }
         Ui.EndCard();
 
-        Ui.BeginCard("Lockpicking");
+        Ui.BeginCard("Locks & Electronics");
         Ui.Toggle2(ref InstantLockpick, "Instant Lockpick", ref Unbreakable, "Unbreakable Picks");
+        fuseHelper = Ui.Toggle(fuseHelper, "Fuse Order", "shows which fuse to pull next");
         Ui.EndCard();
     }
 
@@ -751,7 +841,9 @@ public class CheatMenu : MonoBehaviour
         GUILayout.BeginHorizontal();
         Ui.Label("Search", Ui.Sub, Ui.W(60));
         // Only the search text itself. While typing, the glowing frame shows the field is active.
-        if (Ui.Button(search, searching ? Ui.FieldOn : Ui.Field)) { searching = true; searchFieldClickFrame = Time.frameCount; editId = null; }
+        if (!searching) searchAllSelected = false;
+        string searchShown = searchAllSelected ? $"<color={Ui.AHex}>{search}</color>" : search;   // highlighted = selected with Ctrl+A
+        if (Ui.Button(searchShown, searching ? Ui.FieldOn : Ui.Field)) { searching = true; searchFieldClickFrame = Time.frameCount; editId = null; }
         if (search.Length > 0 && Ui.Button("✕", Ui.Chip, Ui.W(36))) { search = ""; itemPage = 0; }
         GUILayout.EndHorizontal();
 
@@ -784,14 +876,29 @@ public class CheatMenu : MonoBehaviour
 
     void HandleSearchInput()
     {
+        // Ctrl+A selects the whole search text: the next key replaces it, Backspace/Delete clears it
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        if (ctrl && Input.GetKeyDown(KeyCode.A)) searchAllSelected = search.Length > 0;
+        if (searchAllSelected && Input.GetKeyDown(KeyCode.Delete)) { search = ""; searchAllSelected = false; itemPage = 0; }
+
         foreach (char c in Input.inputString)
         {
-            if (c == '\b') { if (search.Length > 0) search = search.Substring(0, search.Length - 1); }
+            if (c == '\b')
+            {
+                if (searchAllSelected) search = "";
+                else if (search.Length > 0) search = search.Substring(0, search.Length - 1);
+                searchAllSelected = false;
+            }
             else if (c == '\n' || c == '\r') searching = false;
-            else if (!char.IsControl(c) && search.Length < 30) search += c;
+            else if (!char.IsControl(c) && !ctrl)
+            {
+                if (searchAllSelected) { search = ""; searchAllSelected = false; }
+                if (search.Length < 30) search += c;
+            }
             itemPage = 0;
         }
         if (Input.GetKeyDown(KeyCode.Escape)) searching = false;
+        if (!searching) searchAllSelected = false;
     }
 
     Vector3 SpawnPoint(int i, int count)
@@ -844,6 +951,176 @@ public class CheatMenu : MonoBehaviour
         SetStatus(ok > 0 ? $"Spawned {ok}x {e.Name}" : "Could not spawn - see log");
     }
 
+    // ---------------- NPCs ----------------
+    class NpcEntry { public Fusion.NetworkObject Prefab; public string Name; }
+    List<NpcEntry> npcPrefabs;
+    NpcEntry selectedNpc;
+    int npcSpawnCount = 1, npcPage;
+    static readonly int[] NpcCounts = { 1, 3, 5, 10 };
+
+    static string NiceName(string n) => string.IsNullOrEmpty(n) ? "?" : n.Replace("(Clone)", "").Replace("_", " ").Trim();
+
+    void ScanNpcs()
+    {
+        npcPrefabs = new List<NpcEntry>();
+        try
+        {
+            var table = Fusion.NetworkProjectConfig.Global.PrefabTable;
+            foreach (var (id, _) in table.GetEntries())
+            {
+                try
+                {
+                    var no = table.Load(id, true);
+                    if (no != null && no.GetComponent<NPC>() != null)
+                        npcPrefabs.Add(new NpcEntry { Prefab = no, Name = NiceName(no.name) });
+                }
+                catch { }
+            }
+        }
+        catch (Exception e) { Plugin.L.LogError(e); }
+        npcPrefabs = npcPrefabs.GroupBy(x => x.Name).Select(g => g.First()).OrderBy(x => x.Name).ToList();
+        Plugin.L.LogInfo($"Found {npcPrefabs.Count} NPC types");
+    }
+
+    void DrawNpcs()
+    {
+        if (!Game.InGame) { Ui.Label("Load into a game first.", Ui.Text); return; }
+
+        int alive = 0;
+        try { alive = FindObjectsOfType<NPC>().Count(n => n != null && !n.knockedDown); } catch { }
+        Ui.BeginCard("Kill All", $"{alive} NPCs standing in this area");
+        if (Ui.Button($"Kill All NPCs  [{Plugin.KeyKillAll.Value}]", Ui.Danger)) KillAllNpcs();
+        Ui.EndCard();
+
+        if (npcPrefabs == null) ScanNpcs();
+        Ui.BeginCard("Spawn NPCs", "Appear at your crosshair or in front of you");
+        spawnAtCrosshair = Ui.Chips(spawnAtCrosshair, new[] { true, false }, v => v ? "At Crosshair" : "In Front of Me", 2);
+        npcSpawnCount = Ui.Chips(npcSpawnCount, NpcCounts, v => v + "x", 4);
+        if (npcPrefabs.Count == 0) Ui.Label("No NPC types found.", Ui.Sub);
+        int pages = Math.Max(1, (npcPrefabs.Count + PageSize - 1) / PageSize);
+        npcPage = Mathf.Clamp(npcPage, 0, pages - 1);
+        foreach (var e in npcPrefabs.Skip(npcPage * PageSize).Take(PageSize))
+            if (Ui.Button(e.Name, selectedNpc == e ? Ui.RowOn : Ui.Row)) selectedNpc = e;
+        if (pages > 1)
+        {
+            GUILayout.BeginHorizontal();
+            if (Ui.Button("◀", Ui.Chip, Ui.W(50))) npcPage--;
+            Ui.Label($"Page {npcPage + 1} / {pages}", Ui.Sub);
+            if (Ui.Button("▶", Ui.Chip, Ui.W(50))) npcPage++;
+            GUILayout.EndHorizontal();
+        }
+        Ui.EndCard();
+
+        string btn = selectedNpc != null ? $"SPAWN {npcSpawnCount}x {selectedNpc.Name}" : "Select an NPC above";
+        if (Ui.Button(btn, Ui.Primary) && selectedNpc != null) SpawnNpc(selectedNpc, npcSpawnCount);
+    }
+
+    void SpawnNpc(NpcEntry e, int count)
+    {
+        if (!Check()) return;
+        int ok = 0;
+        for (int i = 0; i < count; i++)
+        {
+            try
+            {
+                var pos = SpawnPoint(i, count);
+                var rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(Game.Me.transform.position - pos, Vector3.up).normalized + Vector3.forward * 0.0001f);
+                if (Game.WM.Runner.Spawn(e.Prefab, pos, rot) != null) ok++;
+            }
+            catch (Exception ex) { Plugin.L.LogError(ex); break; }
+        }
+        SetStatus(ok > 0 ? $"Spawned {ok}x {e.Name}" : "Could not spawn - see log");
+    }
+
+    void KillAllNpcs()
+    {
+        if (!Check()) return;
+        int n = 0;
+        foreach (var npc in FindObjectsOfType<NPC>())
+        {
+            try
+            {
+                if (npc == null || npc.knockedDown) continue;
+                npc.RPC_DealDamage(9999f, false, true);
+                n++;
+            }
+            catch (Exception e) { Plugin.L.LogError(e); }
+        }
+        SetStatus(n > 0 ? $"Took down {n} NPC(s)" : "No NPCs standing");
+    }
+
+    // ---------------- teleport ----------------
+    readonly Vector3?[] savedPositions = new Vector3?[3];
+
+    void DrawTeleport()
+    {
+        if (!Game.InGame) { Ui.Label("Load into a game first.", Ui.Text); return; }
+
+        Ui.BeginCard("Quick Teleport");
+        if (Ui.Button($"To Crosshair  [{Plugin.KeyTeleport.Value}]", Ui.Primary)) TeleportToCrosshair();
+        GUILayout.BeginHorizontal();
+        if (Ui.Button("To Truck", Ui.Tab)) TeleportToTruck();
+        if (Ui.Button("To Start Point", Ui.Tab)) TeleportToSpawn();
+        GUILayout.EndHorizontal();
+        Ui.EndCard();
+
+        Ui.BeginCard("Saved Positions", "Save where you stand and jump back later (this session)");
+        for (int i = 0; i < savedPositions.Length; i++)
+        {
+            GUILayout.BeginHorizontal();
+            Ui.Label($"Slot {i + 1}", Ui.Text, Ui.W(70));
+            if (Ui.Button("Save here", Ui.Chip)) { savedPositions[i] = Game.Me.transform.position; SetStatus($"Position saved in slot {i + 1}"); }
+            if (savedPositions[i].HasValue)
+            {
+                if (Ui.Button("Teleport", Ui.ChipOn)) TeleportTo(savedPositions[i].Value, $"slot {i + 1}");
+            }
+            else Ui.Label("<color=#6a7080>empty</color>", Ui.Sub, Ui.W(110));
+            GUILayout.EndHorizontal();
+        }
+        Ui.EndCard();
+    }
+
+    void TeleportTo(Vector3 pos, string where)
+    {
+        if (!Check()) return;
+        try
+        {
+            var me = Game.Me;
+            me.SetPlayerPosition(pos, me.transform.eulerAngles, snapToGroundd: true);
+            SetStatus("Teleported to " + where);
+        }
+        catch (Exception e) { Plugin.L.LogError(e); SetStatus("Error - see log"); }
+    }
+
+    void TeleportToCrosshair()
+    {
+        if (!Check()) return;
+        var cam = Camera.main;
+        if (cam == null) return;
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out var hit, 500f, ~0, QueryTriggerInteraction.Ignore))
+            TeleportTo(hit.point + hit.normal * 0.5f + Vector3.up * 0.2f, "crosshair");
+        else SetStatus("Aim at something to teleport there");
+    }
+
+    void TeleportToTruck()
+    {
+        if (!Check()) return;
+        var t = Game.WM.truckObj;
+        if (t == null) { SetStatus("No truck in this area"); return; }
+        TeleportTo(t.position + t.right * 3f + Vector3.up * 0.5f, "truck");
+    }
+
+    void TeleportToSpawn()
+    {
+        if (!Check()) return;
+        try
+        {
+            var sp = Game.WM.spawnPoints[Game.WM.spawnPointIndex].playerSpawns[0];
+            TeleportTo(sp.position, "start point");
+        }
+        catch { SetStatus("No start point in this area"); }
+    }
+
     void DrawSettings()
     {
         Ui.BeginCard("Theme");
@@ -857,6 +1134,8 @@ public class CheatMenu : MonoBehaviour
         KeyRow("Full heal", Plugin.KeyHeal);
         KeyRow("Call off cops", Plugin.KeyCops);
         KeyRow("Add money", Plugin.KeyMoney);
+        KeyRow("Teleport to crosshair", Plugin.KeyTeleport);
+        KeyRow("Kill all NPCs", Plugin.KeyKillAll);
         Ui.EndCard();
 
         Ui.BeginCard("Save");
@@ -881,6 +1160,17 @@ public class CheatMenu : MonoBehaviour
         if (!Game.InGame) { SetStatus("Load into a game first"); return false; }
         if (!Game.Allowed) { SetStatus("Disabled in online sessions with other players"); return false; }
         return true;
+    }
+
+    // if you are already sprayed when switching it on, end the effect right away
+    void ClearPepper()
+    {
+        try
+        {
+            var me = Game.Me;
+            if (me != null && Game.Allowed && me.isPepperSprayed) me.pepperSprayTimer = 0f;
+        }
+        catch { }
     }
 
     void Heal()

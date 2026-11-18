@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.2.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unity-2022.3%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -47,7 +47,7 @@ The installation takes about 5 minutes and only has to be done once.
 ### Step 4 – Install the cheats
 
 1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-CrimeSimulator-v1.1.0.zip`** (always take the newest version).
+   **`EvilDragons-Cheats-CrimeSimulator-v1.2.0.zip`** (always take the newest version).
 2. Open the ZIP and copy the `BepInEx` folder inside it into your game folder.
    If Windows asks whether to merge/replace, click **Yes**.
 3. Check: the file `EvilDragon.CrimeSimulatorCheats.dll` is now in `BepInEx\plugins\`.
@@ -62,11 +62,13 @@ Start the game, load a **single-player** save and press **F1**. The menu opens o
 
 | Tab | What you can do |
 |:--|:--|
-| **Player** | God mode, infinite stamina, full heal, walk speed up to 5x |
+| **Player** | God mode (also against police tasers, sleep darts and the border sniper), infinite stamina, immune to pepper spray, no world border, full heal, walk speed up to 5x |
 | **Stealth** | No police, call off the cops, undetectable, silent (no noise), no heat |
-| **Gear** | No durability loss, infinite ammo, repair all items, damage up to one-hit, range up to x5, no attack cooldown, faster attacks, no attack stamina, instant lockpick, unbreakable lockpicks |
+| **Gear** | No durability loss, infinite ammo, repair all items, damage up to one-hit, range up to x5, no attack cooldown, faster attacks, no attack stamina, instant lockpick, unbreakable lockpicks, **fuse order** (shows which fuse to pull next in the electronics minigame) |
 | **Money** | Add or remove money (presets or your own amount), add XP, add skill points |
 | **Items** | Spawn any item (weapons, ammo, tools, skill books, loot, money …) at your crosshair or in front of you – with categories, search and amount. **Heist Plans:** one click spawns everything a robbery needs (e.g. the train station plan) |
+| **NPCs** | Take down all NPCs, spawn any NPC type (1–10) |
+| **Teleport** | To your crosshair, to the truck, to the start point, 3 saved position slots |
 | **Settings** | 6 themes, change hotkeys, Save Settings |
 
 ## Hotkeys
@@ -77,10 +79,12 @@ Start the game, load a **single-player** save and press **F1**. The menu opens o
 | <kbd>F2</kbd> | Full heal |
 | <kbd>F3</kbd> | Call off the cops |
 | <kbd>F4</kbd> | Add the selected money amount |
+| <kbd>F5</kbd> | Teleport to your crosshair |
+| <kbd>F6</kbd> | Take down all NPCs |
 
 You can change every hotkey in the **Settings** tab. While the menu is open, your character stands still (like in the pause menu), so you don't shoot or walk while clicking.
 
-**Searching items:** click the search field and type. Click anywhere else when you are done.
+**Searching items:** click the search field and type. Click anywhere else when you are done. **Ctrl+A** selects the search text – Backspace clears it, typing replaces it.
 
 **Typing your own number:** click the dark field (e.g. *Custom amount*), type the number and press **Enter**.
 
@@ -123,6 +127,14 @@ The DLL is copied into `BepInEx\plugins` automatically (unless the game is runni
 </details>
 
 ## Changelog
+
+**1.2.0**
+- New tabs **NPCs** (take down all, spawn NPCs) and **Teleport** (crosshair, truck, start point, saved slots)
+- God mode now also protects from police tasers, sleep darts and the world-border sniper
+- New: no world border, immune to pepper spray
+- New: fuse order helper for the electronics minigame
+- Search: Ctrl+A selects the search text
+- New hotkeys F5 (teleport) and F6 (take down all)
 
 **1.1.0**
 - Heist Plans: spawn the items a robbery requires with one click

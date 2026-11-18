@@ -17,7 +17,7 @@ namespace PumpingSimulator2Cheats;
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "evildragon.cheats.pumpingsimulator2";
-    public const string Version = "1.0.0";
+    public const string Version = "1.0.1";
 
     internal static ManualLogSource L;
     internal static ConfigFile Cfg;
@@ -118,6 +118,7 @@ public class CheatMenu : MonoBehaviour
     string itemCategory = "All", search = "";
     bool searching, spawnAtCrosshair = true;
     int searchFieldClickFrame = -1, searchCloseCheckFrame = -1;
+    bool searchAllSelected;
     int itemPage, itemAmount = 10;
     OrderEntry selectedOrder;
     string[] categories = { "All" };
@@ -323,15 +324,31 @@ public class CheatMenu : MonoBehaviour
 
     void HandleSearchInput()
     {
+        // Ctrl+A selects the whole search text: the next key replaces it, Backspace/Delete clears it
+        var kb = Keyboard.current;
+        bool ctrl = kb != null && kb.ctrlKey.isPressed;
+        if (ctrl && Pressed(Key.A)) searchAllSelected = search.Length > 0;
+        if (searchAllSelected && Pressed(Key.Delete)) { search = ""; searchAllSelected = false; itemPage = 0; }
+
         while (typed.Count > 0)
         {
             char c = typed.Dequeue();
-            if (c == '\b') { if (search.Length > 0) search = search.Substring(0, search.Length - 1); }
+            if (c == '\b')
+            {
+                if (searchAllSelected) search = "";
+                else if (search.Length > 0) search = search.Substring(0, search.Length - 1);
+                searchAllSelected = false;
+            }
             else if (c == '\n' || c == '\r') searching = false;
-            else if (!char.IsControl(c) && search.Length < 30) search += c;
+            else if (!char.IsControl(c) && !ctrl)
+            {
+                if (searchAllSelected) { search = ""; searchAllSelected = false; }
+                if (search.Length < 30) search += c;
+            }
             itemPage = 0;
         }
         if (Pressed(Key.Enter) || Pressed(Key.NumpadEnter) || Pressed(Key.Escape)) searching = false;
+        if (!searching) searchAllSelected = false;
     }
 
     static Key[] allKeys;
@@ -518,7 +535,9 @@ public class CheatMenu : MonoBehaviour
 
         GUILayout.BeginHorizontal();
         Ui.Label("Search", Ui.Sub, Ui.W(60));
-        if (Ui.Button(search, searching ? Ui.FieldOn : Ui.Field)) { searching = true; searchFieldClickFrame = Time.frameCount; editId = null; }
+        if (!searching) searchAllSelected = false;
+        string searchShown = searchAllSelected ? $"<color={Ui.AHex}>{search}</color>" : search;   // highlighted = selected with Ctrl+A
+        if (Ui.Button(searchShown, searching ? Ui.FieldOn : Ui.Field)) { searching = true; searchFieldClickFrame = Time.frameCount; editId = null; }
         if (search.Length > 0 && Ui.Button("✕", Ui.Chip, Ui.W(36))) { search = ""; itemPage = 0; }
         GUILayout.EndHorizontal();
 

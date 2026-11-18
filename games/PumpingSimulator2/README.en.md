@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.0.1-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unity-2022.3%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -45,7 +45,7 @@ The installation takes about 5 minutes and only has to be done once.
 ### Step 4 – Install the cheats
 
 1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-PumpingSimulator2-v1.0.0.zip`**.
+   **`EvilDragons-Cheats-PumpingSimulator2-v1.0.1.zip`** (always take the newest version).
 2. Open the ZIP and copy the `BepInEx` folder inside it into your game folder.
    If Windows asks whether to merge/replace, click **Yes**.
 3. Check: the file `EvilDragon.PumpingSimulator2Cheats.dll` is now in `BepInEx\plugins\`.
@@ -78,7 +78,7 @@ Start the game, load your save and press **F1**. The menu opens on the left side
 
 You can change every hotkey in the **Settings** tab. While the menu is open, your character stands still, so you don't walk around while clicking.
 
-**Searching items:** click the search field and type. Click anywhere else when you are done.
+**Searching items:** click the search field and type. Click anywhere else when you are done. **Ctrl+A** selects the search text – Backspace clears it, typing replaces it.
 
 **Typing your own number:** click the dark field (e.g. *Custom amount*), type the number and press **Enter**.
 
@@ -120,6 +120,9 @@ The DLL is copied into `BepInEx\plugins` automatically (unless the game is runni
 </details>
 
 ## Changelog
+
+**1.0.1**
+- Search: Ctrl+A selects the search text
 
 **1.0.0**
 - First release
