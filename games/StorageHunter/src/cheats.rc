@@ -1,2 +1,0 @@
-#include "resource.h"
-IDR_LOGO RCDATA "..\..\..\shared\logo96.rgba"

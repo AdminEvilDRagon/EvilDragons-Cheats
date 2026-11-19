@@ -1,13 +1,6 @@
 // EvilDragon's Cheats - Storage Hunter Simulator
 #pragma once
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <functional>
-#include <mutex>
-#include <string>
-#include <vector>
-
-#define ED_VERSION "1.0.0"
+#include "ed_ui.h"
 
 // ---------------- settings (written by the menu, read by the game thread) ----------------
 struct Settings
@@ -60,8 +53,6 @@ struct GameView
 extern Settings g_set;
 extern GameView g_view;
 extern std::mutex g_viewLock;
-extern bool g_menuOpen;
-extern HMODULE g_self;
 
 // ---------------- items (filled on the game thread) ----------------
 struct ItemEntry { std::string name, cls; int cat = 0, rarity = 0, value = 0, index = 0; };
@@ -75,7 +66,6 @@ void Game_SpawnItem(int index, int count, bool verified);
 void RunOnGame(std::function<void()> fn);
 
 // game.cpp
-void Game_Init();
 void Game_SetMenuOpen(bool open);
 void Game_AddMoney(int amount);
 void Game_AddXp(int amount);
@@ -95,11 +85,4 @@ void Game_SetTimeOfDay(double t);
 void Game_AddTickets(int amount);
 
 // menu.cpp
-void Menu_Draw();
-void Menu_HandleHotkeys();
-void Menu_LoadSettings();
 void Menu_SaveSettings();
-void Log(const char* fmt, ...);
-
-// render.cpp
-void* Render_LogoTexture();   // ImTextureID for the logo (nullptr if not loaded)

@@ -1,6 +1,6 @@
 // EvilDragon's Cheats - Storage Hunter Simulator
 // Loaded by the EvilDragon loader (dxgi.dll) once the game window is up.
-#include "cheats.h"
+#include "ed_ui.h"
 #include "MinHook.h"
 
 HMODULE g_self;

@@ -106,10 +106,10 @@ Storage Hunter Simulator ist ein Unreal-Engine-Spiel, die Mod ist deshalb in C++
 Voraussetzungen: Visual Studio mit C++-Tools, Python 3, [Dear ImGui 1.91.5](https://github.com/ocornut/imgui), [MinHook](https://github.com/TsudaKageyu/minhook)
 und ein SDK des Spiels, erzeugt mit [Dumper-7](https://github.com/Encryqed/Dumper-7).
 
-1. `loader\build.bat` baut die `dxgi.dll` (lädt alle DLLs aus dem Ordner `EvilDragon`).
+1. `shared\unreal\loader\build.bat` baut die `dxgi.dll` (lädt alle DLLs aus dem Ordner `EvilDragon`).
 2. Dumper-7 einmal ins Spiel laden (DLL in den Ordner `EvilDragon` legen, Spiel starten) – das SDK landet in `C:\Dumper-7`.
 3. `src\local.bat.example` nach `src\local.bat` kopieren und die Pfade eintragen.
-4. `src\build.bat` ausführen. `tools\fix_sdk.py` repariert dabei automatisch einen Fehler im Dumper-7-SDK.
+4. `src\build.bat` ausführen. `shared\unreal\fix_sdk.py` repariert dabei automatisch einen Fehler im Dumper-7-SDK.
 </details>
 
 ## Changelog

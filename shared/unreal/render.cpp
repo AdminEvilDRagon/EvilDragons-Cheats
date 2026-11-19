@@ -1,5 +1,6 @@
-// DirectX 12 overlay: hooks the swap chain's Present, draws the ImGui menu on top of the game.
-#include "cheats.h"
+// DirectX 11 / 12 overlay: hooks the swap chain's Present, draws the ImGui menu on top of the game.
+#include "ed_ui.h"
+#include <d3d11.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <deque>
@@ -7,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
+#include "imgui_impl_dx11.h"
 #include "resource.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
@@ -32,6 +34,13 @@ static WNDPROC g_oWndProc;
 static bool g_ready, g_failed;
 static ID3D12Resource* g_logo;
 static D3D12_GPU_DESCRIPTOR_HANDLE g_logoGpu;
+
+// DirectX 11 games
+static bool g_dx11;
+static ID3D11Device* g_dev11;
+static ID3D11DeviceContext* g_ctx11;
+static ID3D11RenderTargetView* g_rtv11;
+static ID3D11ShaderResourceView* g_logo11;
 
 struct Frame { ID3D12CommandAllocator* alloc = nullptr; ID3D12Resource* rt = nullptr; D3D12_CPU_DESCRIPTOR_HANDLE rtv{}; UINT64 fence = 0; };
 static std::vector<Frame> g_frames;
@@ -61,7 +70,7 @@ static LRESULT CALLBACK HookWndProc(HWND h, UINT m, WPARAM w, LPARAM l)
     return CallWindowProcW(g_oWndProc, h, m, w, l);
 }
 
-void* Render_LogoTexture() { return g_logo ? (void*)g_logoGpu.ptr : nullptr; }
+void* Render_LogoTexture() { if (g_dx11) return g_logo11; return g_logo ? (void*)g_logoGpu.ptr : nullptr; }
 
 // ---------------- helpers ----------------
 static void WaitFence(UINT64 v)
@@ -143,6 +152,27 @@ static void LoadLogo()
     g_dev->CreateShaderResourceView(g_logo, &sd, cpu);
 }
 
+static void InitImGuiCommon()
+{
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+
+    char fonts[MAX_PATH];
+    GetWindowsDirectoryA(fonts, MAX_PATH);
+    std::string bold = std::string(fonts) + "\\Fonts\\segoeuib.ttf";
+    std::string semi = std::string(fonts) + "\\Fonts\\seguisb.ttf";
+    ImFontConfig cfg; cfg.OversampleH = 2; cfg.OversampleV = 2;
+    const ImWchar* ranges = io.Fonts->GetGlyphRangesDefault();
+    if (GetFileAttributesA(semi.c_str()) != INVALID_FILE_ATTRIBUTES) io.Fonts->AddFontFromFileTTF(semi.c_str(), 18.0f, &cfg, ranges);
+    else io.Fonts->AddFontDefault();
+    if (GetFileAttributesA(bold.c_str()) != INVALID_FILE_ATTRIBUTES) io.Fonts->AddFontFromFileTTF(bold.c_str(), 24.0f, &cfg, ranges);
+
+    ImGui_ImplWin32_Init(g_hwnd);
+}
+
 static bool InitOverlay(IDXGISwapChain3* sc)
 {
     if (FAILED(sc->GetDevice(IID_PPV_ARGS(&g_dev)))) return false;
@@ -163,23 +193,7 @@ static bool InitOverlay(IDXGISwapChain3* sc)
     g_fenceEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     CreateTargets(sc);
 
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr;
-    io.LogFilename = nullptr;
-    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-
-    char fonts[MAX_PATH];
-    GetWindowsDirectoryA(fonts, MAX_PATH);
-    std::string bold = std::string(fonts) + "\\Fonts\\segoeuib.ttf";
-    std::string semi = std::string(fonts) + "\\Fonts\\seguisb.ttf";
-    ImFontConfig cfg; cfg.OversampleH = 2; cfg.OversampleV = 2;
-    const ImWchar* ranges = io.Fonts->GetGlyphRangesDefault();
-    if (GetFileAttributesA(semi.c_str()) != INVALID_FILE_ATTRIBUTES) io.Fonts->AddFontFromFileTTF(semi.c_str(), 18.0f, &cfg, ranges);
-    else io.Fonts->AddFontDefault();
-    if (GetFileAttributesA(bold.c_str()) != INVALID_FILE_ATTRIBUTES) io.Fonts->AddFontFromFileTTF(bold.c_str(), 24.0f, &cfg, ranges);
-
-    ImGui_ImplWin32_Init(g_hwnd);
+    InitImGuiCommon();
     ImGui_ImplDX12_Init(g_dev, (int)desc.BufferCount, desc.BufferDesc.Format, g_srvHeap,
         g_srvHeap->GetCPUDescriptorHandleForHeapStart(), g_srvHeap->GetGPUDescriptorHandleForHeapStart());
     ImGui_ImplDX12_CreateDeviceObjects();
@@ -229,9 +243,97 @@ static void RenderFrame(IDXGISwapChain3* sc)
     f.fence = g_fenceVal;
 }
 
+// ---------------- DirectX 11 ----------------
+static const BYTE* LogoPixels()
+{
+    HRSRC res = FindResourceW(g_self, MAKEINTRESOURCEW(IDR_LOGO), MAKEINTRESOURCEW(10));
+    if (!res || SizeofResource(g_self, res) < 96 * 96 * 4) return nullptr;
+    return (const BYTE*)LockResource(LoadResource(g_self, res));
+}
+
+static void CreateTarget11(IDXGISwapChain3* sc)
+{
+    ID3D11Texture2D* bb = nullptr;
+    if (SUCCEEDED(sc->GetBuffer(0, IID_PPV_ARGS(&bb))))
+    {
+        g_dev11->CreateRenderTargetView(bb, nullptr, &g_rtv11);
+        bb->Release();
+    }
+}
+
+static bool InitOverlay11(IDXGISwapChain3* sc)
+{
+    g_ctx11 = nullptr;
+    g_dev11->GetImmediateContext(&g_ctx11);
+    DXGI_SWAP_CHAIN_DESC desc{};
+    sc->GetDesc(&desc);
+    g_hwnd = desc.OutputWindow;
+    CreateTarget11(sc);
+    InitImGuiCommon();
+    ImGui_ImplDX11_Init(g_dev11, g_ctx11);
+    if (const BYTE* px = LogoPixels())
+    {
+        D3D11_TEXTURE2D_DESC td{};
+        td.Width = 96; td.Height = 96; td.MipLevels = 1; td.ArraySize = 1; td.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        td.SampleDesc.Count = 1; td.Usage = D3D11_USAGE_DEFAULT; td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        D3D11_SUBRESOURCE_DATA init{ px, 96 * 4, 0 };
+        ID3D11Texture2D* tex = nullptr;
+        if (SUCCEEDED(g_dev11->CreateTexture2D(&td, &init, &tex)))
+        {
+            g_dev11->CreateShaderResourceView(tex, nullptr, &g_logo11);
+            tex->Release();
+        }
+    }
+    g_oWndProc = (WNDPROC)SetWindowLongPtrW(g_hwnd, GWLP_WNDPROC, (LONG_PTR)HookWndProc);
+    Log("overlay ready (dx11, format %d)", (int)desc.BufferDesc.Format);
+    return true;
+}
+
+static bool BuildFrame()
+{
+    {
+        std::lock_guard<std::mutex> lk(g_msgLock);
+        for (auto& m : g_msgs) ImGui_ImplWin32_WndProcHandler(g_hwnd, m.m, m.w, m.l);
+        g_msgs.clear();
+    }
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+    Menu_HandleHotkeys();
+    Menu_Draw();
+    ImGui::Render();
+    ImDrawData* dd = ImGui::GetDrawData();
+    return dd && dd->CmdListsCount > 0;
+}
+
+static void RenderFrame11(IDXGISwapChain3* sc)
+{
+    if (!g_rtv11) CreateTarget11(sc);
+    ImGui_ImplDX11_NewFrame();
+    if (!BuildFrame() || !g_rtv11) return;
+    g_ctx11->OMSetRenderTargets(1, &g_rtv11, nullptr);
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
 // ---------------- hooks ----------------
 static HRESULT STDMETHODCALLTYPE HkPresent(IDXGISwapChain3* sc, UINT sync, UINT flags)
 {
+    // DirectX 11 game?
+    if (!g_ready && !g_failed && !g_dx11)
+    {
+        ID3D11Device* d11 = nullptr;
+        if (SUCCEEDED(sc->GetDevice(IID_PPV_ARGS(&d11))) && d11)
+        {
+            g_dx11 = true;
+            g_dev11 = d11;
+            g_ready = InitOverlay11(sc);
+            if (!g_ready) { g_failed = true; Log("overlay init failed (dx11)"); }
+        }
+    }
+    if (g_dx11)
+    {
+        if (g_ready && !g_failed) RenderFrame11(sc);
+        return oPresent(sc, sync, flags);
+    }
     if (g_queue && !g_failed)
     {
         if (!g_ready)
@@ -250,6 +352,11 @@ static HRESULT STDMETHODCALLTYPE HkPresent(IDXGISwapChain3* sc, UINT sync, UINT 
 
 static HRESULT STDMETHODCALLTYPE HkResize(IDXGISwapChain3* sc, UINT count, UINT w, UINT h, DXGI_FORMAT fmt, UINT flags)
 {
+    if (g_dx11)
+    {
+        if (g_rtv11) { g_rtv11->Release(); g_rtv11 = nullptr; }
+        return oResize(sc, count, w, h, fmt, flags);
+    }
     if (g_ready) ReleaseTargets();
     HRESULT hr = oResize(sc, count, w, h, fmt, flags);
     if (g_ready && SUCCEEDED(hr) && count != 0 && count != g_frames.size())
