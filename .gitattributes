@@ -3,3 +3,4 @@
 *.csproj text eol=crlf
 *.png binary
 *.rgba binary
+*.bat text eol=crlf
