@@ -252,30 +252,124 @@ public static class Ui
         }
     }
 
+    // ---------------- manual layout ----------------
+    // Some games strip GUILayout completely (only GUI.Button/Label/Box with a Rect are left).
+    // Set Manual = true there: every helper then places itself with its own simple layout.
+    // Rows need their column count up front: BeginRow(n) ... EndRow().
+    public static bool Manual;
+    /// Screen rect of the last button/label (manual layout) - e.g. to detect clicks outside a field.
+    public static Rect LastRect;
+    static Rect area;
+    static float cy, rowUsed, rowH, pendingW = -1f;
+    static bool inRow;
+    static int rowCols, rowPlaced;
+    const float Gap = 6f;
+
+    public static void BeginArea(Rect r, GUIStyle style)
+    {
+        if (!Manual)
+        {
+            if (Styled && style != null) GUILayout.BeginArea(r, style); else GUILayout.BeginArea(r, GUI.skin.box);
+            return;
+        }
+        if (Styled && style != null) GUI.Box(r, "", style); else GUI.Box(r, "");
+        float l = 14, t = 14, rr = 14, b = 14;
+        try { if (Styled && style != null) { l = style.padding.left; t = style.padding.top; rr = style.padding.right; b = style.padding.bottom; } } catch { }
+        area = new Rect(r.x + l, r.y + t, r.width - l - rr, r.height - t - b);
+        cy = area.y; inRow = false; pendingW = -1f;
+    }
+
+    public static void EndArea() { if (!Manual) GUILayout.EndArea(); }
+
+    public static void BeginRow(int columns)
+    {
+        if (!Manual) { GUILayout.BeginHorizontal(); return; }
+        inRow = true; rowCols = Math.Max(1, columns); rowPlaced = 0; rowUsed = 0; rowH = 0;
+    }
+
+    public static void EndRow()
+    {
+        if (!Manual) { GUILayout.EndHorizontal(); return; }
+        if (inRow) { cy += rowH + Gap; inRow = false; }
+    }
+
+    static Rect Next(float h)
+    {
+        float w;
+        if (inRow)
+        {
+            int remaining = Math.Max(1, rowCols - rowPlaced);
+            float free = area.width - rowUsed - Gap * (remaining - 1);
+            w = pendingW > 0 ? Math.Min(pendingW, Math.Max(10f, free)) : Math.Max(10f, free / remaining);
+            var r = new Rect(area.x + rowUsed, cy, w, h);
+            rowUsed += w + Gap; rowPlaced++; rowH = Math.Max(rowH, h);
+            pendingW = -1f;
+            return r;
+        }
+        w = pendingW > 0 ? Math.Min(pendingW, area.width) : area.width;
+        pendingW = -1f;
+        var rr = new Rect(area.x, cy, w, h);
+        cy += h + Gap;
+        return rr;
+    }
+
+    static float Height(GUIStyle s, string text, bool button)
+    {
+        if (Styled && s != null && s.fixedHeight > 0) return s.fixedHeight;
+        int fs = Styled && s != null && s.fontSize > 0 ? s.fontSize : 14;
+        int i = text != null ? text.IndexOf("<size=", StringComparison.Ordinal) : -1;
+        if (i >= 0 && int.TryParse(new string(text.Substring(i + 6).TakeWhileDigit()), out var big)) fs = Math.Max(fs, big);
+        return button ? Math.Max(28f, fs * 2f) : fs * 1.45f + 6f;
+    }
+
+    static char[] TakeWhileDigit(this string t)
+    {
+        int n = 0;
+        while (n < t.Length && char.IsDigit(t[n])) n++;
+        return t.Substring(0, n).ToCharArray();
+    }
+
     public static GUILayoutOption[] W(float w)
     {
+        if (Manual) { pendingW = w; return Array.Empty<GUILayoutOption>(); }
         if (!widthOk) return Array.Empty<GUILayoutOption>();
         try { return new[] { GUILayout.Width(w) }; } catch { widthOk = false; return Array.Empty<GUILayoutOption>(); }
     }
 
     public static void Space(float px)
     {
+        if (Manual) { if (!inRow) cy += px; return; }
         if (spaceOk) { try { GUILayout.Space(px); return; } catch { spaceOk = false; } }
         GUILayout.Label("");
     }
 
     public static bool Button(string text, GUIStyle style, params GUILayoutOption[] opts)
     {
+        if (Manual)
+        {
+            var r = Next(Height(style, text, true));
+            LastRect = r;
+            return Styled && style != null ? GUI.Button(r, text, style) : GUI.Button(r, text);
+        }
+        bool hit;
         if (Styled && styleCallOk && style != null)
         {
-            try { return GUILayout.Button(text, style, opts); }
+            try { hit = GUILayout.Button(text, style, opts); try { LastRect = GUILayoutUtility.GetLastRect(); } catch { } return hit; }
             catch { styleCallOk = false; }
         }
-        return GUILayout.Button(text, opts);
+        hit = GUILayout.Button(text, opts);
+        try { LastRect = GUILayoutUtility.GetLastRect(); } catch { }
+        return hit;
     }
 
     public static void Label(string text, GUIStyle style, params GUILayoutOption[] opts)
     {
+        if (Manual)
+        {
+            var r = Next(Height(style, text, false));
+            if (Styled && style != null) GUI.Label(r, text, style); else GUI.Label(r, text);
+            return;
+        }
         if (Styled && styleCallOk && style != null)
         {
             try { GUILayout.Label(text, style, opts); return; }
@@ -290,6 +384,7 @@ public static class Ui
     /// Always pair with EndCard().
     public static void BeginCard(string title, string desc = null)
     {
+        if (Manual) { Space(4); Label(title.ToUpperInvariant(), CardTitle ?? Section); if (desc != null) Label(desc, Sub); return; }
         bool framed = false;
         if (Styled && cardOk && CardBox != null)
         {
@@ -301,15 +396,15 @@ public static class Ui
         if (desc != null) Label(desc, Sub);
     }
 
-    public static void EndCard() => GUILayout.EndVertical();
+    public static void EndCard() { if (!Manual) GUILayout.EndVertical(); }
 
     /// Two toggles side by side (compact rows inside cards).
     public static void Toggle2(ref bool a, string la, ref bool b, string lb)
     {
-        GUILayout.BeginHorizontal();
+        BeginRow(2);
         a = Toggle(a, la);
         b = Toggle(b, lb);
-        GUILayout.EndHorizontal();
+        EndRow();
     }
 
     public static bool Toggle(bool v, string label, string hint = null)
@@ -324,10 +419,10 @@ public static class Ui
     {
         for (int i = 0; i < values.Length; i++)
         {
-            if (i % perRow == 0) GUILayout.BeginHorizontal();
+            if (i % perRow == 0) BeginRow(Math.Min(perRow, values.Length - i));
             bool on = EqualityComparer<T>.Default.Equals(values[i], current);
             if (Button(on && !Styled ? $"> {fmt(values[i])} <" : fmt(values[i]), on ? ChipOn : Chip)) current = values[i];
-            if (i % perRow == perRow - 1 || i == values.Length - 1) GUILayout.EndHorizontal();
+            if (i % perRow == perRow - 1 || i == values.Length - 1) EndRow();
         }
         return current;
     }
@@ -342,12 +437,12 @@ public static class Ui
 
     public static float Stepper(string label, float v, float step, float min, float max, string fmt = "0.0")
     {
-        GUILayout.BeginHorizontal();
+        BeginRow(4);
         Label($"{label}", Text, W(150));
         Label($"<b>{v.ToString(fmt)}x</b>", Text, W(70));
         if (Button("−", Chip, W(40))) v -= step;
         if (Button("+", Chip, W(40))) v += step;
-        GUILayout.EndHorizontal();
+        EndRow();
         return Mathf.Clamp((float)Math.Round(v, 2), min, max);
     }
 }

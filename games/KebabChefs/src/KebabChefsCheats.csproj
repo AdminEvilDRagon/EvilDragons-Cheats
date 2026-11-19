@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Your local game path goes into GameDir.props (not committed). See GameDir.props.example. -->
+  <Import Project="GameDir.props" Condition="Exists('GameDir.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>EvilDragon.KebabChefsCheats</AssemblyName>
+    <RootNamespace>KebabChefsCheats</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>EvilDragon</Authors>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+
+    <!-- Keep local paths out of the built DLL -->
+    <Deterministic>true</Deterministic>
+    <DebugType>none</DebugType>
+    <PathMap>$(MSBuildProjectDirectory)=/src</PathMap>
+
+    <GameDir Condition="'$(GameDir)' == ''">$(KEBABCHEFS_DIR)</GameDir>
+    <Interop>$(GameDir)\BepInEx\interop</Interop>
+    <Core>$(GameDir)\BepInEx\core</Core>
+  </PropertyGroup>
+
+  <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(Interop)\Assembly-CSharp.dll')"
+           Text="Game not found. Copy GameDir.props.example to GameDir.props and set your Kebab Chefs folder, then start the game once with BepInEx installed so BepInEx\interop is generated." />
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\shared\EvilDragonUi.cs" Link="Shared\EvilDragonUi.cs" />
+    <EmbeddedResource Include="..\..\..\shared\logo96.rgba" LogicalName="EvilDragon.logo96.rgba" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="$(Core)\BepInEx.Core.dll" Private="false" />
+    <Reference Include="$(Core)\BepInEx.Unity.IL2CPP.dll" Private="false" />
+    <Reference Include="$(Core)\0Harmony.dll" Private="false" />
+    <Reference Include="$(Core)\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="$(Interop)\Il2Cppmscorlib.dll" Private="false" />
+    <Reference Include="$(Interop)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.PhysicsModule.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.UI.dll" Private="false" />
+    <Reference Include="$(Interop)\Unity.InputSystem.dll" Private="false" />
+    <Reference Include="$(Interop)\Unity.Netcode.Runtime.dll" Private="false" />
+    <Reference Include="$(Interop)\UnityEngine.AnimationModule.dll" Private="false" />
+    <Reference Include="$(Interop)\Unity.TextMeshPro.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Copies the plugin into the game after building (skipped silently if the game is running) -->
+  <Target Name="CopyToPlugins" AfterTargets="Build" Condition="Exists('$(GameDir)\BepInEx\plugins')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\BepInEx\plugins" Retries="0" ContinueOnError="true" />
+  </Target>
+
+</Project>

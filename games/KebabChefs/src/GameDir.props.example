@@ -1,0 +1,6 @@
+<Project>
+  <!-- Copy this file to GameDir.props and point it at your Kebab Chefs! Prologue install folder. -->
+  <PropertyGroup>
+    <GameDir>C:\Program Files (x86)\Steam\steamapps\common\Kebab Simulator Prologue</GameDir>
+  </PropertyGroup>
+</Project>
