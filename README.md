@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10&label=downloads" /></a>
-  <img src="https://img.shields.io/badge/spiele-3-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/spiele-4-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/nur-einzelspieler-ffb300?style=for-the-badge&labelColor=0b1a10" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/lizenz-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
@@ -26,6 +26,7 @@
 | **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/CanEmAll) |
 | **Crime Simulator** | `1.2.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/CrimeSimulator) |
 | **Pumping Simulator 2** | `1.0.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/PumpingSimulator2) |
+| **Storage Hunter Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/StorageHunter) |
 
 Weitere Spiele kommen mit der Zeit dazu. Jedes Spiel hat einen eigenen Ordner unter [`games/`](games) mit eigener Anleitung.
 
@@ -35,6 +36,8 @@ Weitere Spiele kommen mit der Zeit dazu. Jedes Spiel hat einen eigenen Ordner un
 
 Die Cheats sind eine kleine Mod-Datei (eine `.dll`), die von einem kostenlosen Mod-Loader namens **BepInEx** ins Spiel geladen wird.
 Du installierst BepInEx einmal, legst die Mod-Datei hinein, startest das Spiel und drückst **F1**, um das Menü zu öffnen.
+
+Bei Unreal-Spielen wie Storage Hunter Simulator brauchst du kein BepInEx – dort liegt der Loader direkt in der ZIP.
 
 Die genauen Schritte sind bei jedem Spiel etwas anders, folge deshalb immer der Anleitung deines Spiels in der Tabelle oben.
 
@@ -59,7 +62,8 @@ EvilDragons-Cheats/
     │   ├── README.en.md    Anleitung (Englisch)
     │   └── src/            Quellcode (C#)
     ├── CrimeSimulator/
-    └── PumpingSimulator2/
+    ├── PumpingSimulator2/
+    └── StorageHunter/      (Unreal Engine, C++)
 ```
 
 ## Hinweis

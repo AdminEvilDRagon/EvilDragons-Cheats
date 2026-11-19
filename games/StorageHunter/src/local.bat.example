@@ -1,0 +1,9 @@
+rem Copy to local.bat and fill in your paths (local.bat is not committed).
+rem SDK      = the CppSDK folder Dumper-7 generated for the game
+rem IMGUI    = Dear ImGui source (v1.91.5)
+rem MINHOOK  = MinHook source
+rem GAMEDIR  = ...\Storage Hunter\StorageHunter\Binaries\Win64
+set "SDK=C:\Dumper-7\5.4.4-0+UE5-StorageHunter\CppSDK"
+set "IMGUI=C:\dev\imgui"
+set "MINHOOK=C:\dev\minhook"
+set "GAMEDIR="

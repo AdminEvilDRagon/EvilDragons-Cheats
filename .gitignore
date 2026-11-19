@@ -12,3 +12,7 @@ GameDir.props
 **/BepInEx/
 interop/
 *.zip
+
+# local build paths for the C++ (Unreal) mods
+local.bat
+*.obj
