@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.2.1-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unity-2022.3%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -47,7 +47,7 @@ The installation takes about 5 minutes and only has to be done once.
 ### Step 4 – Install the cheats
 
 1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-CrimeSimulator-v1.2.0.zip`** (always take the newest version).
+   **`EvilDragons-Cheats-CrimeSimulator-v1.2.1.zip`** (always take the newest version).
 2. Open the ZIP and copy the `BepInEx` folder inside it into your game folder.
    If Windows asks whether to merge/replace, click **Yes**.
 3. Check: the file `EvilDragon.CrimeSimulatorCheats.dll` is now in `BepInEx\plugins\`.
@@ -127,6 +127,9 @@ The DLL is copied into `BepInEx\plugins` automatically (unless the game is runni
 </details>
 
 ## Changelog
+
+**1.2.1**
+- Fixed a crash when joining a level (the NPC list now only loads NPCs that are actually in the level)
 
 **1.2.0**
 - New tabs **NPCs** (take down all, spawn NPCs) and **Teleport** (crosshair, truck, start point, saved slots)

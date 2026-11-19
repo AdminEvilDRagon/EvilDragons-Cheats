@@ -15,7 +15,7 @@ namespace CrimeSimulatorCheats;
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "evildragon.cheats.crimesimulator";
-    public const string Version = "1.2.0";
+    public const string Version = "1.2.1";
 
     internal static ManualLogSource L;
     internal static ConfigFile Cfg;
@@ -956,30 +956,36 @@ public class CheatMenu : MonoBehaviour
     List<NpcEntry> npcPrefabs;
     NpcEntry selectedNpc;
     int npcSpawnCount = 1, npcPage;
+    float npcScanAt;
     static readonly int[] NpcCounts = { 1, 3, 5, 10 };
 
     static string NiceName(string n) => string.IsNullOrEmpty(n) ? "?" : n.Replace("(Clone)", "").Replace("_", " ").Trim();
 
+    // Only use the NPC types that already exist in the current area. Their prefabs are loaded anyway,
+    // so this costs no extra memory. (Loading the whole prefab table used up all memory and crashed the game.)
+    readonly Dictionary<uint, NpcEntry> npcKnown = new();
+
     void ScanNpcs()
     {
-        npcPrefabs = new List<NpcEntry>();
         try
         {
             var table = Fusion.NetworkProjectConfig.Global.PrefabTable;
-            foreach (var (id, _) in table.GetEntries())
+            foreach (var npc in FindObjectsOfType<NPC>())
             {
                 try
                 {
-                    var no = table.Load(id, true);
-                    if (no != null && no.GetComponent<NPC>() != null)
-                        npcPrefabs.Add(new NpcEntry { Prefab = no, Name = NiceName(no.name) });
+                    var obj = npc != null ? npc.GetComponent<Fusion.NetworkObject>() : null;
+                    if (obj == null || !obj.NetworkTypeId.IsPrefab) continue;
+                    var id = obj.NetworkTypeId.AsPrefabId;
+                    if (npcKnown.ContainsKey(id.RawValue) || !table.IsAcquired(id)) continue;
+                    var prefab = table.Load(id, true);
+                    if (prefab != null) npcKnown[id.RawValue] = new NpcEntry { Prefab = prefab, Name = NiceName(prefab.name) };
                 }
                 catch { }
             }
         }
         catch (Exception e) { Plugin.L.LogError(e); }
-        npcPrefabs = npcPrefabs.GroupBy(x => x.Name).Select(g => g.First()).OrderBy(x => x.Name).ToList();
-        Plugin.L.LogInfo($"Found {npcPrefabs.Count} NPC types");
+        npcPrefabs = npcKnown.Values.Where(x => x.Prefab != null).GroupBy(x => x.Name).Select(g => g.First()).OrderBy(x => x.Name).ToList();
     }
 
     void DrawNpcs()
@@ -992,8 +998,8 @@ public class CheatMenu : MonoBehaviour
         if (Ui.Button($"Kill All NPCs  [{Plugin.KeyKillAll.Value}]", Ui.Danger)) KillAllNpcs();
         Ui.EndCard();
 
-        if (npcPrefabs == null) ScanNpcs();
-        Ui.BeginCard("Spawn NPCs", "Appear at your crosshair or in front of you");
+        if (npcPrefabs == null || Time.unscaledTime >= npcScanAt) { npcScanAt = Time.unscaledTime + 5f; ScanNpcs(); }
+        Ui.BeginCard("Spawn NPCs", "All NPC types you have met in this area – appear at your crosshair or in front of you");
         spawnAtCrosshair = Ui.Chips(spawnAtCrosshair, new[] { true, false }, v => v ? "At Crosshair" : "In Front of Me", 2);
         npcSpawnCount = Ui.Chips(npcSpawnCount, NpcCounts, v => v + "x", 4);
         if (npcPrefabs.Count == 0) Ui.Label("No NPC types found.", Ui.Sub);

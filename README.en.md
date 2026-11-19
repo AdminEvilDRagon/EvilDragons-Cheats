@@ -24,7 +24,7 @@
 | Game | Version | Download | Guide |
 |:--|:--:|:--|:--|
 | **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CanEmAll/README.en.md) |
-| **Crime Simulator** | `1.2.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CrimeSimulator/README.en.md) |
+| **Crime Simulator** | `1.2.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CrimeSimulator/README.en.md) |
 | **Pumping Simulator 2** | `1.0.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/PumpingSimulator2/README.en.md) |
 
 More games will be added over time. Each game has its own folder under [`games/`](games) with its own install guide.
