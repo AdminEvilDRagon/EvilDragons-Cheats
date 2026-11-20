@@ -1,0 +1,6 @@
+<Project>
+  <!-- Copy this file to GameDir.props and point it at your Wobbly Life install folder. -->
+  <PropertyGroup>
+    <GameDir>C:\Program Files (x86)\Steam\steamapps\common\Wobbly Life</GameDir>
+  </PropertyGroup>
+</Project>

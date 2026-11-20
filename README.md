@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10&label=downloads" /></a>
-  <img src="https://img.shields.io/badge/spiele-8-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/spiele-9-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/nur-einzelspieler-ffb300?style=for-the-badge&labelColor=0b1a10" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/lizenz-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
@@ -31,6 +31,7 @@
 | **Kebab Chefs! Prologue** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/KebabChefs) |
 | **Streamer Life Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/StreamerLife) |
 | **Streamer Life Simulator 2** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/StreamerLife2) |
+| **Wobbly Life** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/WobblyLife) |
 
 Weitere Spiele kommen mit der Zeit dazu. Jedes Spiel hat einen eigenen Ordner unter [`games/`](games) mit eigener Anleitung.
 
@@ -71,6 +72,7 @@ EvilDragons-Cheats/
     ├── PumpingSimulator2/
     ├── StreamerLife/
     ├── StreamerLife2/
+    ├── WobblyLife/
     ├── StorageHunter/      (Unreal Engine, C++)
     └── DiggingAHole/       (Unreal Engine, C++)
 ```
