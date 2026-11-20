@@ -21,6 +21,12 @@ struct Settings
     // world
     bool  freezeTime = false;
     float timeSpeed = 1.0f;
+    // unanchor
+    bool  unanchorClick = true;
+    bool  unanchorBig = false;
+    bool  unanchorNoGravity = false;
+    float unanchorPush = 0.0f;
+    float unanchorRange = 8.0f;
     // menu
     int   moneyIndex = 2;
     std::string theme = "Dragon";
@@ -83,6 +89,19 @@ void Game_FillFuel();
 void Game_SpawnRandomItems(int count);
 void Game_SetTimeOfDay(double t);
 void Game_AddTickets(int amount);
+struct LocEntry { std::string name; int cat = 0; double x = 0, y = 0, z = 0; };   // cat: 0 house, 1 pawn shop, 2 auction, 3 garage
+extern std::vector<LocEntry> g_locs;
+extern std::mutex g_locsLock;
+void Game_TeleportTo(double x, double y, double z);
+void Game_BringCar();
+void Game_TeleportToCar();
+void Game_SavePosition();
+void Game_LoadPosition();
+void Game_UnanchorClick(bool useMouse, bool freeze);
+void Game_UnanchorRange(float meters);
+void Game_UndoUnanchor(bool all);
+void Game_AnchorAll();
+void Game_SetUnanchorGravity(bool on);
 
 // menu.cpp
 void Menu_SaveSettings();

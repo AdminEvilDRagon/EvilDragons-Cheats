@@ -26,7 +26,7 @@
 | **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/CanEmAll) |
 | **Crime Simulator** | `1.2.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/CrimeSimulator) |
 | **Pumping Simulator 2** | `1.0.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/PumpingSimulator2) |
-| **Storage Hunter Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/StorageHunter) |
+| **Storage Hunter Simulator** | `1.1.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/StorageHunter) |
 | **A Game About Digging A Hole** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/DiggingAHole) |
 | **Kebab Chefs! Prologue** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/KebabChefs) |
 

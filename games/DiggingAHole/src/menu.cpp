@@ -293,7 +293,7 @@ void Menu_Draw()
 
     ImGui::GetIO().MouseDrawCursor = g_menuOpen;
     DrawToast();
-    if (!g_menuOpen) return;
+    if (!MenuVisible(g_menuOpen)) return;
 
     BeginMenuWindow(ED_GAME_NAME, g_set.keyMenu, kTabs, kTabCount, 3, &g_tab);
     if (g_tab != kSettingsTab) StatusCard(v.inGame, v.allowed);

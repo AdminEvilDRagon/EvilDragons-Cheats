@@ -309,14 +309,33 @@ void HotkeysCard(const HotkeyEntry* keys, int count)
     EndCard();
 }
 
+// Open / close animation: the window fades in and slides in from the left.
+static float g_menuAnim;      // 0 = closed, 1 = open
+static bool g_menuAnimOpen;
+bool MenuVisible(bool open)
+{
+    float dt = ImGui::GetIO().DeltaTime;
+    if (dt <= 0 || dt > 0.1f) dt = 0.016f;
+    g_menuAnimOpen = open;
+    g_menuAnim += (open ? dt / 0.18f : -dt / 0.14f);
+    if (g_menuAnim < 0) g_menuAnim = 0;
+    if (g_menuAnim > 1) g_menuAnim = 1;
+    return g_menuAnim > 0;
+}
+
 // Window frame: gradient bar, logo, title, tabs. Returns the content area (call EndMenuWindow after).
 void BeginMenuWindow(const char* game, int keyMenu, const char* const* tabs, int count, int firstRow, int* tab)
 {
     ImGuiIO& io = ImGui::GetIO();
     float h = io.DisplaySize.y - 80;
-    ImGui::SetNextWindowPos({ 30, 40 }, ImGuiCond_Always);
+    float t = g_menuAnim, e = 1 - (1 - t) * (1 - t) * (1 - t);   // ease out
+    if (!g_menuAnimOpen) e = t * t;                              // close a bit faster at the end
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, e);
+    ImGui::SetNextWindowPos({ 30 - (1 - e) * 70, 40 + (1 - e) * 12 }, ImGuiCond_Always);
     ImGui::SetNextWindowSize({ 520, h > 900 ? 900 : h }, ImGuiCond_Always);
-    ImGui::Begin("EvilDragon's Cheats", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
+    ImGuiWindowFlags fl = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
+    if (!g_menuAnimOpen) fl |= ImGuiWindowFlags_NoInputs;
+    ImGui::Begin("EvilDragon's Cheats", nullptr, fl);
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 wp = ImGui::GetWindowPos(), ws = ImGui::GetWindowSize();
@@ -366,4 +385,4 @@ void StatusCard(bool inGame, bool allowed)
     }
 }
 
-void EndMenuWindow() { ImGui::End(); }
+void EndMenuWindow() { ImGui::End(); ImGui::PopStyleVar(); }

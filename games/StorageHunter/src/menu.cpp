@@ -33,6 +33,7 @@ void Menu_LoadSettings()
     g_set.keyMoney = I("KeyMoney", VK_F2);
     g_set.keyFly = I("KeyFly", VK_F3);
     g_set.moneyIndex = I("MoneyIndex", 2);
+    g_set.unanchorClick = I("UnanchorClick", 1) != 0;
     g_set.saveSettings = B("SaveSettings");
     if (g_set.saveSettings)
     {
@@ -40,6 +41,8 @@ void Menu_LoadSettings()
         g_set.unlimitedJumps = B("UnlimitedJumps"); g_set.flySpeed = F("FlySpeed", 2);
         g_set.alwaysVerifyFix = B("AlwaysVerifyFix"); g_set.infiniteFuel = B("InfiniteFuel");
         g_set.freezeTime = B("FreezeTime"); g_set.brokeBidders = B("WinAuctions");
+        g_set.unanchorBig = B("UnanchorBig"); g_set.unanchorNoGravity = B("UnanchorNoGravity");
+        g_set.unanchorPush = F("UnanchorPush", 0); g_set.unanchorRange = F("UnanchorRange", 8);
     }
 }
 
@@ -47,12 +50,14 @@ void Menu_SaveSettings()
 {
     std::ofstream f(IniPath());
     f << "Theme=" << g_themeName << "\nKeyMenu=" << g_set.keyMenu << "\nKeyMoney=" << g_set.keyMoney << "\nKeyFly=" << g_set.keyFly
-      << "\nMoneyIndex=" << g_set.moneyIndex << "\nSaveSettings=" << (int)g_set.saveSettings << "\n";
+      << "\nMoneyIndex=" << g_set.moneyIndex << "\nUnanchorClick=" << (int)g_set.unanchorClick << "\nSaveSettings=" << (int)g_set.saveSettings << "\n";
     if (g_set.saveSettings)
         f << "Speed=" << g_set.speedMul << "\nJump=" << g_set.jumpMul << "\nGravity=" << g_set.gravity
           << "\nUnlimitedJumps=" << (int)g_set.unlimitedJumps << "\nFlySpeed=" << g_set.flySpeed
           << "\nAlwaysVerifyFix=" << (int)g_set.alwaysVerifyFix << "\nInfiniteFuel=" << (int)g_set.infiniteFuel
-          << "\nFreezeTime=" << (int)g_set.freezeTime << "\nWinAuctions=" << (int)g_set.brokeBidders << "\n";
+          << "\nFreezeTime=" << (int)g_set.freezeTime << "\nWinAuctions=" << (int)g_set.brokeBidders
+          << "\nUnanchorBig=" << (int)g_set.unanchorBig << "\nUnanchorNoGravity=" << (int)g_set.unanchorNoGravity
+          << "\nUnanchorPush=" << g_set.unanchorPush << "\nUnanchorRange=" << g_set.unanchorRange << "\n";
 }
 
 static const int kMoney[] = { 1000, 10000, 100000, 1000000 };
@@ -67,6 +72,15 @@ void Menu_HandleHotkeys()
     {
         if (Pressed(g_set.keyMoney)) { int a = kMoney[g_set.moneyIndex & 3]; Game_AddMoney(a); Toast("+" + Money(a)); }
         if (Pressed(g_set.keyFly)) { g_set.fly = !g_set.fly; Toast(g_set.fly ? "Fly mode ON" : "Fly mode OFF"); }
+        // Ctrl + left click: unanchor what you aim at (menu closed) or what is under the mouse (menu open)
+        // Ctrl + right click: anchor it again where it is
+        bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+        bool overMenu = g_menuOpen && ImGui::GetIO().WantCaptureMouse;
+        if (g_set.unanchorClick && ctrl && !overMenu && !g_set.fly)
+        {
+            if (Pressed(VK_LBUTTON)) Game_UnanchorClick(g_menuOpen, false);
+            if (Pressed(VK_RBUTTON)) Game_UnanchorClick(g_menuOpen, true);
+        }
     }
 }
 
@@ -322,6 +336,49 @@ static void TabWorld(const GameView& v)
         if (Btn("Set time", -1)) Game_SetTimeOfDay(hour * 100.0);
     }
     EndCard();
+    if (BeginCard("Teleport"))
+    {
+        float w = Col(2);
+        if (Btn("Bring my car", w, true)) Game_BringCar();
+        ImGui::SameLine();
+        if (Btn("Go to my car", w)) Game_TeleportToCar();
+        if (Btn("Save position", w)) Game_SavePosition();
+        ImGui::SameLine();
+        if (Btn("Go to saved", w)) Game_LoadPosition();
+        std::vector<LocEntry> locs;
+        { std::lock_guard<std::mutex> lk(g_locsLock); locs = g_locs; }
+        static const char* kCat[] = { "Houses", "Pawn shops", "Auctions", "Garage" };
+        int last = -1;
+        for (size_t i = 0; i < locs.size(); i++)
+        {
+            const LocEntry& e = locs[i];
+            if (e.cat != last) { last = e.cat; ImGui::TextColored(kMuted, "%s", kCat[e.cat & 3]); }
+            ImGui::PushID((int)i);
+            if (Btn(e.name.c_str(), -1)) Game_TeleportTo(e.x, e.y, e.z);
+            ImGui::PopID();
+        }
+        if (locs.empty()) Note("Loading places... (load your game first)");
+        else Note("In the car, the car comes along.");
+    }
+    EndCard();
+    if (BeginCard("Unanchor"))
+    {
+        if (Toggle("Ctrl + Click", &g_set.unanchorClick, "Ctrl+Left unanchor, Ctrl+Right anchor")) Dirty();
+        if (Toggle("Big objects", &g_set.unanchorBig, "walls, floors, big shelves too")) Dirty();
+        if (Toggle("No gravity", &g_set.unanchorNoGravity, "loose objects float")) { Game_SetUnanchorGravity(!g_set.unanchorNoGravity); Dirty(); }
+        if (Slider("Push on click", &g_set.unanchorPush, 0, 3000, "%.0f")) Dirty();
+        if (Slider("Range", &g_set.unanchorRange, 2, 30, "%.0f m")) Dirty();
+        float w = Col(2);
+        if (Btn("Unanchor in range", w, true)) Game_UnanchorRange(g_set.unanchorRange);
+        ImGui::SameLine();
+        if (Btn("Freeze all", w)) Game_AnchorAll();
+        if (Btn("Undo last", w)) Game_UndoUnanchor(false);
+        ImGui::SameLine();
+        if (Btn("Put all back", w)) Game_UndoUnanchor(true);
+        Note("Aim at something (crosshair) and press Ctrl + Left click. With the menu open, Ctrl + click where the mouse is. "
+             "Ctrl + Left click on a loose object pushes it. Only for this session - after loading, everything is back in place.");
+    }
+    EndCard();
 }
 
 static void TabSettings(const GameView&)
@@ -350,7 +407,7 @@ void Menu_Draw()
 
     ImGui::GetIO().MouseDrawCursor = g_menuOpen;
     DrawToast();
-    if (!g_menuOpen) return;
+    if (!MenuVisible(g_menuOpen)) return;
 
     BeginMenuWindow(ED_GAME_NAME, g_set.keyMenu, kTabs, kTabCount, 4, &g_tab);
     if (g_tab != kSettingsTab) StatusCard(v.inGame, v.allowed);

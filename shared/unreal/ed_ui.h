@@ -69,3 +69,4 @@ void HotkeysCard(const HotkeyEntry* keys, int count);
 void BeginMenuWindow(const char* game, int keyMenu, const char* const* tabs, int count, int firstRow, int* tab);
 void StatusCard(bool inGame, bool allowed);
 void EndMenuWindow();
+bool MenuVisible(bool open);   // drives the open/close animation; draw the window while true

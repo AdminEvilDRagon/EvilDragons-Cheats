@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unreal-5.4-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/mod--loader-nicht%20n%C3%B6tig-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/plattform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -35,7 +35,7 @@ Die Installation dauert etwa 2 Minuten. Du brauchst **keinen** Mod-Loader – al
 ### Schritt 2 – Cheats installieren
 
 1. Geh auf die [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases)-Seite und lade
-   **`EvilDragons-Cheats-StorageHunter-v1.0.0.zip`** herunter (nimm immer die neueste Version).
+   **`EvilDragons-Cheats-StorageHunter-v1.1.0.zip`** herunter (nimm immer die neueste Version).
 2. Öffne die ZIP und kopiere den Ordner `StorageHunter` darin in deinen Spielordner.
    Wenn Windows fragt, ob zusammengeführt/ersetzt werden soll, klick auf **Ja**.
 3. Kontrolle: In `StorageHunter\Binaries\Win64\` liegen jetzt neben `StorageHunter-Win64-Shipping.exe`
@@ -57,7 +57,7 @@ Das Menü wird etwa 10 Sekunden nach dem Start geladen.
 | **Items** | Jedes Item spawnen – mit Kategorien, Suche, Anzahl (1–20) und „schon verifiziert“. Kategorie **Special** für die besonderen Items |
 | **Workshop** | Werkzeug-Level (Prüfen, Reparieren, Schlösser knacken), Prüfen & Reparieren klappt immer, Container entsperren, Zufalls-Items |
 | **Business** | Pfandleihe leveln / kaufen, **jede Auktion gewinnen** (NPC-Bieter haben kein Geld), Aufgabe / Quest abschließen, unendlich Sprit, Tank füllen |
-| **World** | Uhrzeit setzen (Morgen / Mittag / Abend / Nacht oder frei), Zeit einfrieren |
+| **World** | **Teleport** zu Häusern, Pfandhäusern, Auktionen und Garage, **Auto zu dir holen**, zum Auto teleportieren, Position speichern. **Unanchor**: Objekte der Map lösen (Strg + Klick oder alles in Reichweite), schubsen, einfrieren, zurücksetzen. Uhrzeit setzen, Zeit einfrieren |
 | **Settings** | 6 Themes, Tasten ändern, Save Settings |
 
 ## Hotkeys
@@ -71,6 +71,8 @@ Das Menü wird etwa 10 Sekunden nach dem Start geladen.
 Alle Tasten kannst du im Tab **Settings** ändern. Solange das Menü offen ist, bleibt deine Figur stehen.
 
 **Flugmodus:** WASD zum Fliegen, Leertaste hoch, Strg oder C runter, Shift schneller.
+
+**Unanchor:** Ziel aufs Objekt und **Strg + Linksklick** – es fällt runter. Nochmal Strg + Linksklick schubst es, **Strg + Rechtsklick** friert es ein. Bei offenem Menü zählt das Objekt unter der Maus. Wände und Böden nur mit „Big objects“. Nichts davon wird gespeichert.
 
 **Items spawnen:** Item anklicken und **Spawn** drücken – oder doppelt klicken. Die Items erscheinen vor dir.
 
@@ -113,6 +115,12 @@ und ein SDK des Spiels, erzeugt mit [Dumper-7](https://github.com/Encryqed/Dumpe
 </details>
 
 ## Changelog
+
+**1.1.0**
+- Teleport zu Häusern, Pfandhäusern, Auktionen und Garage, Position speichern
+- Auto zu dir holen / zum Auto teleportieren
+- Unanchor: Objekte mit Strg + Klick oder in Reichweite lösen, schubsen, einfrieren, zurücksetzen
+- Menü hat eine Animation beim Öffnen und Schließen
 
 **1.0.0**
 - Erste Version

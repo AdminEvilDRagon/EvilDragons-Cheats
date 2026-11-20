@@ -25,6 +25,13 @@
 #include "SDK/BP_Cheats_Comp_classes.hpp"
 #include "SDK/BP_TradableItemBase_classes.hpp"
 #include "SDK/F_TradableItem_DataRow_v11_structs.hpp"
+#include "SDK/BP_PlayerEstate_Plot_classes.hpp"
+#include "SDK/PA_PlayerEstate_PlotData_classes.hpp"
+#include "SDK/BP_PawnShopBase_classes.hpp"
+#include "SDK/BP_ClassicAuctionSiteController_classes.hpp"
+#include "SDK/BP_BlindAuctionSiteController_classes.hpp"
+#include "SDK/BP_Garage_classes.hpp"
+#include "SDK/BP_PlayerCarBase_classes.hpp"
 
 using namespace SDK;
 
@@ -302,6 +309,9 @@ static void RunJobInner(std::function<void()>* j) { (*j)(); }
 static void RunJob(std::function<void()>& j) { GUARD("action", RunJobInner(&j)); }
 
 static void WatchSpawns();
+static void UpdateLocations();
+static void SafeLocations();
+static void SafeCheckCar();
 static void NameDistricts();
 // NPC bidders lose all their money, so they can't outbid you.
 static void BreakBidders()
@@ -352,6 +362,7 @@ static void Tick(float dt)
     }
 
     if (gs && allowed && g_set.brokeBidders) BreakBidders();
+    if (gs && me) { SafeLocations(); SafeCheckCar(); }
 
     if (AUltra_Dynamic_Sky_C* sky = gs ? Sky() : nullptr)
     {
@@ -756,3 +767,563 @@ static void NameDistricts()
         g_districtNames[d] = n;
     }
 }
+
+// ---------------- unanchor: let fixed map objects fall / be pushed around ----------------
+struct Unanchored
+{
+    UPrimitiveComponent* comp = nullptr; int32 compIdx = 0;   // the component we made simulate
+    FTransform xf{};                                           // where it was
+    EComponentMobility mobility = EComponentMobility::Static;
+    ECollisionEnabled collision = ECollisionEnabled::QueryAndPhysics;
+    USceneComponent* parent = nullptr; int32 parentIdx = 0; FName socket{};
+    UInstancedStaticMeshComponent* ism = nullptr; int32 ismIdx = 0;   // instanced mesh: we spawned a stand-in actor
+    AActor* spawned = nullptr; int32 spawnedIdx = 0;
+};
+static std::vector<Unanchored> g_unanchored;
+static UWorld* g_unanchorWorld;
+static int g_unanchorFails;
+
+static bool Alive(UObject* o, int32 idx) { return o && UObject::GObjects->GetByIndex(idx) == o; }
+
+static void CheckUnanchorWorld()
+{
+    if (g_unanchorWorld != World()) { g_unanchored.clear(); g_unanchorWorld = World(); }
+}
+
+static float Radius(USceneComponent* c)
+{
+    FVector o, e; float r = 0;
+    UKismetSystemLibrary::GetComponentBounds(c, &o, &e, &r);
+    return r;
+}
+
+static bool Skippable(UPrimitiveComponent* c)
+{
+    if (!c || !c->IsA(UStaticMeshComponent::StaticClass())) return true;
+    AActor* owner = c->GetOwner();
+    if (!owner || owner == Me() || owner->IsA(APawn::StaticClass())) return true;
+    std::string cls = owner->Class->GetName();
+    if (cls.find("Landscape") != std::string::npos || cls.find("Sky") != std::string::npos) return true;
+    if (!static_cast<UStaticMeshComponent*>(c)->StaticMesh) return true;
+    return false;
+}
+
+static bool TooBig(float r) { return !g_set.unanchorBig && r > 300.0f; }
+
+static bool MakeSimulate(UPrimitiveComponent* c)
+{
+    ECollisionEnabled ce = c->GetCollisionEnabled();
+    if (ce != ECollisionEnabled::QueryAndPhysics && ce != ECollisionEnabled::PhysicsOnly) ce = ECollisionEnabled::QueryAndPhysics;
+    // rebuild the physics body so it is no longer a static one
+    c->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    c->SetCollisionEnabled(ce);
+    c->SetSimulatePhysics(true);
+    c->SetEnableGravity(!g_set.unanchorNoGravity);
+    c->WakeRigidBody(FName());
+    return c->IsSimulatingPhysics(FName());
+}
+
+// Unanchor one normal mesh component. Returns the component that now simulates (or null).
+static UPrimitiveComponent* UnanchorComp(UPrimitiveComponent* c)
+{
+    if (Skippable(c)) return nullptr;
+    // a mesh that is the root of its actor takes the whole actor with it
+    AActor* owner = c->GetOwner();
+    if (USceneComponent* root = owner->K2_GetRootComponent())
+        if (root != c && root->IsA(UStaticMeshComponent::StaticClass()) && !Skippable(static_cast<UPrimitiveComponent*>(root)) && !TooBig(Radius(root)))
+            c = static_cast<UPrimitiveComponent*>(root);
+    if (c->IsSimulatingPhysics(FName())) return c;
+    if (TooBig(Radius(c))) return nullptr;
+
+    Unanchored u;
+    u.comp = c; u.compIdx = c->Index;
+    u.xf = c->K2_GetComponentToWorld();
+    u.mobility = c->Mobility;
+    u.collision = c->GetCollisionEnabled();
+    u.parent = c->GetAttachParent(); if (u.parent) u.parentIdx = u.parent->Index;
+    u.socket = c->GetAttachSocketName();
+
+    if (c->Mobility != EComponentMobility::Movable) c->SetMobility(EComponentMobility::Movable);
+    if (!MakeSimulate(c))
+    {
+        // no physics body (mesh without collision) - put it back
+        c->SetSimulatePhysics(false);
+        c->SetCollisionEnabled(u.collision);
+        if (u.mobility != EComponentMobility::Movable) c->SetMobility(u.mobility);
+        g_unanchorFails++;
+        return nullptr;
+    }
+    g_unanchored.push_back(u);
+    return c;
+}
+
+// Instanced meshes (many copies drawn as one): swap the copy for a real actor that can fall.
+static UPrimitiveComponent* UnanchorInstance(UInstancedStaticMeshComponent* ism, int32 item)
+{
+    if (!ism || item < 0 || !ism->StaticMesh) return nullptr;
+    AActor* owner = ism->GetOwner();
+    if (!owner || owner->IsA(APawn::StaticClass())) return nullptr;
+    FTransform xf{};
+    if (!ism->GetInstanceTransform(item, &xf, true)) return nullptr;
+    {
+        // size of one copy
+        FBoxSphereBounds b = ism->StaticMesh->GetBounds();
+        double s = (std::max)({ std::fabs(xf.Scale3D.X), std::fabs(xf.Scale3D.Y), std::fabs(xf.Scale3D.Z) });
+        if (TooBig((float)(b.SphereRadius * s))) return nullptr;
+    }
+    AActor* a = UGameplayStatics::BeginDeferredActorSpawnFromClass(World(), AStaticMeshActor::StaticClass(), xf,
+        ESpawnActorCollisionHandlingMethod::AlwaysSpawn, nullptr, ESpawnActorScaleMethod::MultiplyWithRoot);
+    if (!a) return nullptr;
+    UStaticMeshComponent* smc = static_cast<AStaticMeshActor*>(a)->StaticMeshComponent;
+    if (smc) smc->SetMobility(EComponentMobility::Movable);
+    UGameplayStatics::FinishSpawningActor(a, xf, ESpawnActorScaleMethod::MultiplyWithRoot);
+    if (!smc) { a->K2_DestroyActor(); return nullptr; }
+    smc->SetStaticMesh(ism->StaticMesh);
+    for (int i = 0; i < ism->GetNumMaterials(); i++) smc->SetMaterial(i, ism->GetMaterial(i));
+    smc->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    smc->SetSimulatePhysics(true);
+    smc->SetEnableGravity(!g_set.unanchorNoGravity);
+    if (!smc->IsSimulatingPhysics(FName())) { a->K2_DestroyActor(); g_unanchorFails++; return nullptr; }
+    ism->RemoveInstance(item);
+
+    Unanchored u;
+    u.comp = smc; u.compIdx = smc->Index;
+    u.xf = xf;
+    u.ism = ism; u.ismIdx = ism->Index;
+    u.spawned = a; u.spawnedIdx = a->Index;
+    g_unanchored.push_back(u);
+    return smc;
+}
+
+static UPrimitiveComponent* UnanchorHit(UPrimitiveComponent* c, int32 item)
+{
+    if (!c) return nullptr;
+    if (c->IsA(UInstancedStaticMeshComponent::StaticClass()))
+        return UnanchorInstance(static_cast<UInstancedStaticMeshComponent*>(c), item);
+    return UnanchorComp(c);
+}
+
+static void ViewRay(bool useMouse, FVector* start, FVector* dir)
+{
+    APlayerController* pc = PC();
+    if (useMouse && pc->DeprojectMousePositionToWorld(start, dir)) return;
+    APlayerCameraManager* cam = pc->PlayerCameraManager;
+    *start = cam->GetCameraLocation();
+    FRotator r = cam->GetCameraRotation();
+    double yaw = r.Yaw * 3.14159265358979 / 180.0, pitch = r.Pitch * 3.14159265358979 / 180.0;
+    *dir = FVector{ std::cos(pitch) * std::cos(yaw), std::cos(pitch) * std::sin(yaw), std::sin(pitch) };
+}
+
+void Game_UnanchorClick(bool useMouse, bool freeze)
+{
+    RunOnGame([=] {
+        CheckUnanchorWorld();
+        APlayerController* pc = PC();
+        if (!pc || !pc->PlayerCameraManager) return;
+        FVector start, dir;
+        ViewRay(useMouse, &start, &dir);
+        FVector end = start + FVector{ dir.X * 3000, dir.Y * 3000, dir.Z * 3000 };
+        TArray<AActor*> ignore;
+        if (Me()) ignore.Add(Me());
+        FHitResult hit{};
+        if (!UKismetSystemLibrary::LineTraceSingle(World(), start, end, ETraceTypeQuery::TraceTypeQuery1, true, ignore,
+            EDrawDebugTrace::None, &hit, true, FLinearColor{}, FLinearColor{}, 0))
+        { Toast("Nothing there"); return; }
+        UPrimitiveComponent* c = hit.Component.Get();
+        if (!c) { Toast("Nothing there"); return; }
+
+        if (freeze)
+        {
+            // anchor it again where it is now
+            if (!c->IsSimulatingPhysics(FName())) { Toast("Already anchored"); return; }
+            c->SetSimulatePhysics(false);
+            Toast("Anchored");
+            return;
+        }
+        if (c->IsSimulatingPhysics(FName()))
+        {
+            // already loose: give it a shove
+            float f = (std::max)(g_set.unanchorPush, 800.0f);
+            c->AddImpulse(FVector{ dir.X * f, dir.Y * f, dir.Z * f + 200 }, FName(), true);
+            return;
+        }
+        g_unanchorFails = 0;
+        UPrimitiveComponent* done = UnanchorHit(c, hit.Item);
+        if (!done)
+        {
+            if (g_unanchorFails) Toast("No collision - can't unanchor this one");
+            else if (Skippable(c) && !c->IsA(UInstancedStaticMeshComponent::StaticClass())) Toast("Can't unanchor that");
+            else Toast("Too big - turn on 'Big objects' in the World tab");
+            return;
+        }
+        if (g_set.unanchorPush > 0)
+            done->AddImpulse(FVector{ dir.X * g_set.unanchorPush, dir.Y * g_set.unanchorPush, dir.Z * g_set.unanchorPush }, FName(), true);
+        AActor* owner = c->GetOwner();
+        Log("unanchored %s (%s)", done->GetName().c_str(), owner ? owner->GetName().c_str() : "?");
+        Toast("Unanchored");
+    });
+}
+
+void Game_UnanchorRange(float meters)
+{
+    RunOnGame([=] {
+        CheckUnanchorWorld();
+        ABP_PlayerCharacter_C* me = Me();
+        if (!me) return;
+        FVector at = me->K2_GetActorLocation();
+        float r = meters * 100.0f;
+        TArray<EObjectTypeQuery> types;
+        types.Add(EObjectTypeQuery::ObjectTypeQuery1);   // WorldStatic
+        types.Add(EObjectTypeQuery::ObjectTypeQuery2);   // WorldDynamic
+        types.Add(EObjectTypeQuery::ObjectTypeQuery4);   // PhysicsBody
+        TArray<AActor*> ignore;
+        ignore.Add(me);
+        TArray<UPrimitiveComponent*> comps;
+        UKismetSystemLibrary::SphereOverlapComponents(World(), at, r, types, UStaticMeshComponent::StaticClass(), ignore, &comps);
+        int n = 0;
+        const int limit = 300;
+        g_unanchorFails = 0;
+        std::vector<UPrimitiveComponent*> list;
+        for (int i = 0; i < comps.Num(); i++) list.push_back(comps[i]);
+        for (UPrimitiveComponent* c : list)
+        {
+            if (n >= limit) break;
+            if (!c || c->IsSimulatingPhysics(FName())) continue;
+            if (c->IsA(UInstancedStaticMeshComponent::StaticClass()))
+            {
+                auto* ism = static_cast<UInstancedStaticMeshComponent*>(c);
+                TArray<int32> ids = ism->GetInstancesOverlappingSphere(at, r, true);
+                std::vector<int32> sorted;
+                for (int k = 0; k < ids.Num(); k++) sorted.push_back(ids[k]);
+                std::sort(sorted.rbegin(), sorted.rend());   // remove from the back so indices stay valid
+                for (int32 id : sorted) { if (n >= limit) break; if (UnanchorInstance(ism, id)) n++; }
+            }
+            else if (UnanchorComp(c)) n++;
+        }
+        Log("unanchored %d objects in %.0f m (%d without collision)", n, meters, g_unanchorFails);
+        Toast(n ? "Unanchored " + std::to_string(n) + " objects" : std::string("Nothing to unanchor here"));
+    });
+}
+
+static void Restore(Unanchored& u)
+{
+    if (u.spawned)
+    {
+        if (Alive(u.spawned, u.spawnedIdx)) u.spawned->K2_DestroyActor();
+        if (Alive(u.ism, u.ismIdx)) u.ism->AddInstance(u.xf, true);
+        return;
+    }
+    if (!Alive(u.comp, u.compIdx)) return;
+    UPrimitiveComponent* c = u.comp;
+    c->SetSimulatePhysics(false);
+    c->SetEnableGravity(true);
+    if (u.parent && Alive(u.parent, u.parentIdx))
+        c->K2_AttachToComponent(u.parent, u.socket, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, false);
+    c->K2_SetWorldTransform(u.xf, false, nullptr, true);
+    c->SetCollisionEnabled(u.collision);
+    if (u.mobility != EComponentMobility::Movable) c->SetMobility(u.mobility);
+}
+
+void Game_UndoUnanchor(bool all)
+{
+    RunOnGame([=] {
+        CheckUnanchorWorld();
+        int n = 0;
+        while (!g_unanchored.empty())
+        {
+            Restore(g_unanchored.back());
+            g_unanchored.pop_back();
+            n++;
+            if (!all) break;
+        }
+        if (!n) Toast("Nothing to put back");
+        else Toast(all ? "Put " + std::to_string(n) + " objects back" : std::string("Put back"));
+    });
+}
+
+void Game_AnchorAll()
+{
+    RunOnGame([=] {
+        CheckUnanchorWorld();
+        int n = 0;
+        for (auto& u : g_unanchored)
+            if (Alive(u.comp, u.compIdx) && u.comp->IsSimulatingPhysics(FName())) { u.comp->SetSimulatePhysics(false); n++; }
+        Toast("Froze " + std::to_string(n) + " objects where they are");
+    });
+}
+
+void Game_SetUnanchorGravity(bool on)
+{
+    RunOnGame([=] {
+        CheckUnanchorWorld();
+        for (auto& u : g_unanchored)
+            if (Alive(u.comp, u.compIdx) && u.comp->IsSimulatingPhysics(FName())) { u.comp->SetEnableGravity(on); u.comp->WakeRigidBody(FName()); }
+    });
+}
+
+// ---------------- teleport: houses, pawn shops, auctions, garage + bring car ----------------
+std::vector<LocEntry> g_locs;
+std::mutex g_locsLock;
+static UWorld* g_locWorld;
+static ULONGLONG g_locScan;
+static bool g_hasSaved;
+static FVector g_savedPos;
+
+static std::vector<AActor*> AllOf(UClass* cls)
+{
+    std::vector<AActor*> out;
+    if (!cls) return out;
+    TArray<AActor*> arr;
+    UGameplayStatics::GetAllActorsOfClass(World(), cls, &arr);
+    for (int i = 0; i < arr.Num(); i++) if (arr[i]) out.push_back(arr[i]);
+    return out;
+}
+
+static std::string DistrictOf(ABP_District_C* d)
+{
+    if (!d) return "";
+    auto it = g_districtNames.find(d);
+    return it != g_districtNames.end() ? it->second : "";
+}
+
+static double Dist2(const FVector& a, const FVector& b) { double x = a.X - b.X, y = a.Y - b.Y, z = a.Z - b.Z; return x * x + y * y + z * z; }
+
+static void PlotName(ABP_PlayerEstate_Plot_C* p, std::string* out) { if (p->Data) *out = TextToString(p->Data->Name_0); }
+static void SafePlotName(ABP_PlayerEstate_Plot_C* p, std::string* out) { GUARD("plot name", PlotName(p, out)); }
+
+static void ScanLocations()
+{
+    std::vector<LocEntry> list;
+    struct Site { FVector at; std::string district; };
+    std::vector<Site> sites;
+
+    for (AActor* a : AllOf(ABP_PlayerEstate_Plot_C::StaticClass()))
+    {
+        auto* p = static_cast<ABP_PlayerEstate_Plot_C*>(a);
+        LocEntry e; e.cat = 0;
+        SafePlotName(p, &e.name);
+        if (e.name.empty()) e.name = "House";
+        std::string d = DistrictOf(p->AssignedDistricted);
+        if (!d.empty()) e.name += " (" + d + ")";
+        if (p->IsBought) e.name += "  - yours";
+        FVector at = p->SafeSpot_1 ? p->SafeSpot_1->K2_GetComponentLocation() : a->K2_GetActorLocation();
+        e.x = at.X; e.y = at.Y; e.z = at.Z;
+        list.push_back(e);
+    }
+    for (AActor* a : AllOf(ABP_ClassicAuctionSiteController_C::StaticClass()))
+    {
+        auto* s = static_cast<ABP_ClassicAuctionSiteController_C*>(a);
+        std::string d = DistrictOf(s->AssignedDistrict);
+        FVector at = s->SignUpController ? s->SignUpController->K2_GetComponentLocation() : a->K2_GetActorLocation();
+        sites.push_back({ at, d });
+        LocEntry e; e.cat = 2; e.name = "Auction" + (d.empty() ? std::string() : " (" + d + ")");
+        e.x = at.X; e.y = at.Y; e.z = at.Z;
+        list.push_back(e);
+    }
+    for (AActor* a : AllOf(ABP_BlindAuctionSiteController_C::StaticClass()))
+    {
+        auto* s = static_cast<ABP_BlindAuctionSiteController_C*>(a);
+        std::string d = DistrictOf(s->AssignedDistrict);
+        FVector at = s->SignUpController ? s->SignUpController->K2_GetComponentLocation() : a->K2_GetActorLocation();
+        sites.push_back({ at, d });
+        LocEntry e; e.cat = 2; e.name = "Blind auction" + (d.empty() ? std::string() : " (" + d + ")");
+        e.x = at.X; e.y = at.Y; e.z = at.Z;
+        list.push_back(e);
+    }
+    int shop = 0;
+    for (AActor* a : AllOf(ABP_PawnShopBase_C::StaticClass()))
+    {
+        auto* s = static_cast<ABP_PawnShopBase_C*>(a);
+        FVector at = s->NPCCustomerOutsideTarget ? s->NPCCustomerOutsideTarget->K2_GetComponentLocation() : a->K2_GetActorLocation();
+        // name it after the closest auction site's district
+        std::string d; double best = 1e18;
+        for (auto& st : sites) { double q = Dist2(st.at, at); if (q < best && !st.district.empty()) { best = q; d = st.district; } }
+        LocEntry e; e.cat = 1; e.name = "Pawn shop " + std::to_string(++shop) + (d.empty() ? std::string() : " (" + d + ")");
+        e.x = at.X; e.y = at.Y; e.z = at.Z;
+        list.push_back(e);
+    }
+    int garage = 0;
+    for (AActor* a : AllOf(ABP_Garage_C::StaticClass()))
+    {
+        auto* g = static_cast<ABP_Garage_C*>(a);
+        FVector at = g->PlayerMoveSpot ? g->PlayerMoveSpot->K2_GetComponentLocation() : a->K2_GetActorLocation();
+        LocEntry e; e.cat = 3; e.name = "Garage" + (garage++ ? " " + std::to_string(garage) : std::string());
+        e.x = at.X; e.y = at.Y; e.z = at.Z;
+        list.push_back(e);
+    }
+    std::stable_sort(list.begin(), list.end(), [](const LocEntry& a, const LocEntry& b) { return a.cat != b.cat ? a.cat < b.cat : a.name < b.name; });
+    std::lock_guard<std::mutex> lk(g_locsLock);
+    g_locs = list;
+}
+
+// called from Tick
+static void UpdateLocations()
+{
+    if (g_locWorld != World()) { g_locWorld = World(); g_locScan = 0; g_hasSaved = false; std::lock_guard<std::mutex> lk(g_locsLock); g_locs.clear(); }
+    if (GetTickCount64() - g_locScan < 10000) return;
+    g_locScan = GetTickCount64();
+    ScanLocations();
+}
+
+static ABP_PlayerCarBase_C* MyCar()
+{
+    if (ABP_PlayerState_C* ps = PS())
+        if (ps->_CurrentRegisteredPlayerCar) return ps->_CurrentRegisteredPlayerCar;
+    ABP_PlayerCarBase_C* best = nullptr;
+    double bd = 1e18;
+    FVector me = Me() ? Me()->K2_GetActorLocation() : FVector{};
+    for (AActor* a : AllOf(ABP_PlayerCarBase_C::StaticClass()))
+    {
+        double d = Dist2(a->K2_GetActorLocation(), me);
+        if (d < bd) { bd = d; best = static_cast<ABP_PlayerCarBase_C*>(a); }
+    }
+    return best;
+}
+
+static void StopPhysics(AActor* a)
+{
+    USceneComponent* root = a->K2_GetRootComponent();
+    if (root && root->IsA(UPrimitiveComponent::StaticClass()))
+    {
+        auto* p = static_cast<UPrimitiveComponent*>(root);
+        p->SetPhysicsLinearVelocity(FVector{}, false, FName());
+        p->SetPhysicsAngularVelocityInDegrees(FVector{}, false, FName());
+    }
+}
+
+// Call a Blueprint event on the car by name (the SDK's generated car functions do not compile).
+static ABP_PlayerCarBase_C* MyCar();
+static void StopPhysics(AActor* a);
+static void CallCarEvent(ABP_PlayerCarBase_C* car, const char* name, FVector at, FRotator rot)
+{
+    struct { FVector Location; FRotator Rotation; } parms{ at, rot };
+    UFunction* f = car->Class->GetFunction("BP_PlayerCarBase_C", name);
+    if (f) car->ProcessEvent(f, &parms);
+    else Log("car: %s not found", name);
+}
+
+// Move the car. The car uses networked Chaos physics, which puts it back if only the actor is moved,
+// so use the game's own load-from-save placement first, then its recover event.
+static ABP_PlayerCarBase_C* g_carCheck;
+static FVector g_carTarget;
+static ULONGLONG g_carCheckAt;
+static int g_carTries;
+
+static FTransform CarTransform(FVector at, double yawDeg)
+{
+    FTransform xf{};
+    double h = yawDeg * 3.14159265358979 / 360.0;
+    xf.Rotation.X = 0; xf.Rotation.Y = 0; xf.Rotation.Z = std::sin(h); xf.Rotation.W = std::cos(h);
+    xf.Translation = at;
+    xf.Scale3D = FVector{ 1, 1, 1 };
+    return xf;
+}
+
+static void PlaceCar(ABP_PlayerCarBase_C* car, FVector at, FRotator rot)
+{
+    FVector before = car->K2_GetActorLocation();
+    car->Load(CarTransform(at, rot.Yaw));
+    CallCarEvent(car, "Recover", at, rot);
+    StopPhysics(car);
+    FVector after = car->K2_GetActorLocation();
+    Log("car %s: (%.0f %.0f %.0f) -> (%.0f %.0f %.0f)", car->GetName().c_str(), before.X, before.Y, before.Z, after.X, after.Y, after.Z);
+    g_carCheck = car; g_carTarget = at; g_carCheckAt = GetTickCount64() + 1500; g_carTries = 0;
+}
+
+// a moment later: did the car stay? if not, try again with the other methods
+static void CheckCar()
+{
+    if (!g_carCheck || GetTickCount64() < g_carCheckAt) return;
+    ABP_PlayerCarBase_C* car = g_carCheck;
+    if (car != MyCar()) { g_carCheck = nullptr; return; }
+    FVector now = car->K2_GetActorLocation();
+    bool ok = Dist2(now, g_carTarget) < 800.0 * 800.0;
+    Log("car check %d: (%.0f %.0f %.0f) %s", g_carTries, now.X, now.Y, now.Z, ok ? "stayed" : "went back");
+    if (ok || g_carTries >= 2) { g_carCheck = nullptr; if (!ok) Toast("The game moved the car back"); return; }
+    g_carTries++;
+    FRotator rot = car->K2_GetActorRotation();
+    if (g_carTries == 1) CallCarEvent(car, "Move_Car_", g_carTarget, FRotator{ 0, rot.Yaw, 0 });
+    else
+    {
+        USceneComponent* root = car->K2_GetRootComponent();
+        if (root) root->K2_SetWorldLocation(g_carTarget, false, nullptr, true);
+    }
+    StopPhysics(car);
+    g_carCheckAt = GetTickCount64() + 1500;
+}
+
+static bool Driving(ABP_PlayerCarBase_C* car) { return car && car->IsPlayerDriving && car->DrivingPlayerCharacter == Me(); }
+
+static void MoveMeTo(FVector at)
+{
+    ABP_PlayerCharacter_C* me = Me();
+    if (!me) return;
+    ABP_PlayerCarBase_C* car = MyCar();
+    if (Driving(car))
+    {
+        // in the car: take the car along
+        FRotator r = car->K2_GetActorRotation();
+        PlaceCar(car, at + FVector{ 0, 0, 150 }, FRotator{ 0, r.Yaw, 0 });
+        return;
+    }
+    me->K2_SetActorLocation(at + FVector{ 0, 0, 100 }, false, nullptr, true);
+    if (me->CharacterMovement) me->CharacterMovement->Velocity = FVector{};
+}
+
+void Game_TeleportTo(double x, double y, double z)
+{
+    RunOnGame([=] { MoveMeTo(FVector{ x, y, z }); Toast("Teleported"); });
+}
+
+void Game_BringCar()
+{
+    RunOnGame([] {
+        ABP_PlayerCharacter_C* me = Me();
+        ABP_PlayerCarBase_C* car = MyCar();
+        if (!me || !car) { Log("bring car: no car (registered %d)", PS() && PS()->_CurrentRegisteredPlayerCar ? 1 : 0); Toast("No car found"); return; }
+        if (Driving(car)) { Toast("You are already in your car"); return; }
+        FRotator r = me->K2_GetActorRotation();
+        double yaw = r.Yaw * 3.14159265358979 / 180.0;
+        FVector at = me->K2_GetActorLocation() + FVector{ std::cos(yaw) * 600, std::sin(yaw) * 600, 120 };
+        PlaceCar(car, at, FRotator{ 0, r.Yaw + 90, 0 });
+        Toast("Car is here");
+    });
+}
+
+void Game_TeleportToCar()
+{
+    RunOnGame([] {
+        ABP_PlayerCarBase_C* car = MyCar();
+        if (!car) { Toast("No car found"); return; }
+        if (Driving(car)) { Toast("You are already in your car"); return; }
+        FRotator r = car->K2_GetActorRotation();
+        double yaw = (r.Yaw + 90) * 3.14159265358979 / 180.0;   // next to the driver door
+        MoveMeTo(car->K2_GetActorLocation() + FVector{ std::cos(yaw) * -300, std::sin(yaw) * -300, 0 });
+        Toast("Teleported to your car");
+    });
+}
+
+void Game_SavePosition()
+{
+    RunOnGame([] {
+        ABP_PlayerCarBase_C* car = MyCar();
+        AActor* who = Driving(car) ? (AActor*)car : (AActor*)Me();
+        if (!who) return;
+        g_savedPos = who->K2_GetActorLocation();
+        g_hasSaved = true;
+        Toast("Position saved");
+    });
+}
+
+void Game_LoadPosition()
+{
+    RunOnGame([] {
+        if (!g_hasSaved) { Toast("No position saved yet"); return; }
+        MoveMeTo(g_savedPos - FVector{ 0, 0, 90 });
+        Toast("Back at saved position");
+    });
+}
+
+static void SafeLocations() { GUARD("locations", UpdateLocations()); }
+
+static void SafeCheckCar() { GUARD("car check", CheckCar()); }
