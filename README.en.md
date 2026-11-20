@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10" /></a>
-  <img src="https://img.shields.io/badge/games-7-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/games-8-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/single--player-only-ffb300?style=for-the-badge&labelColor=0b1a10" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
@@ -30,6 +30,7 @@
 | **A Game About Digging A Hole** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/DiggingAHole/README.en.md) |
 | **Kebab Chefs! Prologue** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/KebabChefs/README.en.md) |
 | **Streamer Life Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StreamerLife/README.en.md) |
+| **Streamer Life Simulator 2** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StreamerLife2/README.en.md) |
 
 More games will be added over time. Each game has its own folder under [`games/`](games) with its own install guide.
 
@@ -69,6 +70,7 @@ EvilDragons-Cheats/
     ├── KebabChefs/
     ├── PumpingSimulator2/
     ├── StreamerLife/
+    ├── StreamerLife2/
     ├── StorageHunter/      (Unreal Engine, C++)
     └── DiggingAHole/       (Unreal Engine, C++)
 ```

@@ -142,6 +142,8 @@ public static class Ui
 
     // Fonts: Windows' Segoe UI family instead of the thin default Arial
     static Font FBody, FBold, FTitle;
+    /// false = keep Unity's built-in font. Unity 2023.2+ draws IMGUI text with TextCore, which shows nothing for OS fonts.
+    public static bool UseOsFonts = true;
     static Font OsFont(int size, params string[] names)
     {
         try
@@ -205,7 +207,7 @@ public static class Ui
             Border(Panel, 14);
             try { SetOffsets(Panel.padding, 18, 18, 16, 16); } catch { }
 
-            if (FBody == null)
+            if (FBody == null && UseOsFonts)
             {
                 FBody = OsFont(15, "Segoe UI Semibold", "Segoe UI", "Arial");
                 FBold = OsFont(15, "Segoe UI Bold", "Segoe UI Semibold", "Arial");
