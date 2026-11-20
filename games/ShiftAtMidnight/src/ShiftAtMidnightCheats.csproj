@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Your local game path goes into GameDir.props (not committed). See GameDir.props.example. -->
+  <Import Project="GameDir.props" Condition="Exists('GameDir.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>EvilDragon.ShiftAtMidnightCheats</AssemblyName>
+    <RootNamespace>ShiftAtMidnightCheats</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>EvilDragon</Authors>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+
+    <!-- Keep local paths out of the built DLL -->
+    <Deterministic>true</Deterministic>
+    <DebugType>none</DebugType>
+    <PathMap>$(MSBuildProjectDirectory)=/src</PathMap>
+
+    <Managed>$(GameDir)\ShiftAtMidnight_Data\Managed</Managed>
+    <Core>$(GameDir)\BepInEx\core</Core>
+  </PropertyGroup>
+
+  <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(Managed)\Assembly-CSharp.dll') Or !Exists('$(Core)\BepInEx.dll')"
+           Text="Game or BepInEx not found. Copy GameDir.props.example to GameDir.props, set your Shift At Midnight folder and install BepInEx 5 (x64) into it." />
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\shared\EvilDragonUi.cs" Link="Shared\EvilDragonUi.cs" />
+    <EmbeddedResource Include="..\..\..\shared\logo96.rgba" LogicalName="EvilDragon.logo96.rgba" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="$(Core)\BepInEx.dll" Private="false" />
+    <Reference Include="$(Core)\0Harmony.dll" Private="false" />
+    <Reference Include="$(Managed)\Mirror.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.AIModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.AnimationModule.dll" Private="false" />
+    <Reference Include="$(Managed)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.PhysicsModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.UIModule.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Copies the plugin into the game after building (skipped silently if the game is running) -->
+  <Target Name="CopyToPlugins" AfterTargets="Build" Condition="Exists('$(GameDir)\BepInEx\plugins')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\BepInEx\plugins" Retries="0" ContinueOnError="true" />
+  </Target>
+
+</Project>

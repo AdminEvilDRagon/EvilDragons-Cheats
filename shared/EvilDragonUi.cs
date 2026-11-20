@@ -345,8 +345,19 @@ public static class Ui
         GUILayout.Label("");
     }
 
+    // Without options a button/label is at least as wide as its text, so a long name pushes the whole
+    // menu past the right edge. MinWidth(0) lets it shrink to the menu width instead (text gets clipped).
+    static GUILayoutOption[] shrink;
+    static GUILayoutOption[] Fit(GUILayoutOption[] opts)
+    {
+        if (opts != null && opts.Length > 0) return opts;
+        if (shrink == null) { try { shrink = new[] { GUILayout.MinWidth(0f) }; } catch { shrink = Array.Empty<GUILayoutOption>(); } }
+        return shrink;
+    }
+
     public static bool Button(string text, GUIStyle style, params GUILayoutOption[] opts)
     {
+        opts = Fit(opts);
         if (Manual)
         {
             var r = Next(Height(style, text, true));
@@ -366,6 +377,7 @@ public static class Ui
 
     public static void Label(string text, GUIStyle style, params GUILayoutOption[] opts)
     {
+        opts = Fit(opts);
         if (Manual)
         {
             var r = Next(Height(style, text, false));
