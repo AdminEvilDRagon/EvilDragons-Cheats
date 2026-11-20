@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10" /></a>
-  <img src="https://img.shields.io/badge/games-12-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/games-13-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/single--player-only-ffb300?style=for-the-badge&labelColor=0b1a10" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
@@ -35,6 +35,7 @@
 | **Muck** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/Muck/README.en.md) |
 | **Shift At Midnight** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/ShiftAtMidnight/README.en.md) |
 | **Supermarket Together** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/SupermarketTogether/README.en.md) |
+| **Too Many Balls** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/TooManyBalls/README.en.md) |
 
 More games will be added over time. Each game has its own folder under [`games/`](games) with its own install guide.
 
@@ -79,6 +80,7 @@ EvilDragons-Cheats/
     ├── Muck/
     ├── ShiftAtMidnight/
     ├── SupermarketTogether/
+    ├── TooManyBalls/
     ├── StorageHunter/      (Unreal Engine, C++)
     └── DiggingAHole/       (Unreal Engine, C++)
 ```

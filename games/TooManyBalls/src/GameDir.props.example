@@ -1,0 +1,6 @@
+<Project>
+  <!-- Copy this file to GameDir.props and point it at the folder that contains "Too Many Balls.exe". -->
+  <PropertyGroup>
+    <GameDir>C:\Program Files (x86)\Steam\steamapps\common\Too Many Balls</GameDir>
+  </PropertyGroup>
+</Project>
