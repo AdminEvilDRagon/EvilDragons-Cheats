@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
 </p>
 
-<p align="center"><b>EvilDragon's Cheats</b> – an in-game cheat menu for <i>Shift At Midnight</i> (Demo).</p>
+<p align="center"><b>EvilDragon's Cheats</b> – an in-game cheat menu for <i>Shift At Midnight</i>.</p>
 
 > **Single-player only.** Shift At Midnight has online co-op. The cheats only work when you play alone and host the game. As soon as someone joins, every cheat switches itself off.
 
@@ -29,7 +29,7 @@ The installation takes about 5 minutes and only has to be done once.
 ### Step 1 – Open your game folder
 
 1. Open **Steam** and go to your **Library**.
-2. Right-click **Shift At Midnight Demo** → **Manage** → **Browse local files**.
+2. Right-click **Shift At Midnight** → **Manage** → **Browse local files**.
 3. A folder opens. You can see the file `ShiftAtMidnight.exe`. **Keep this folder open.**
 
 ### Step 2 – Install BepInEx 5 (the mod loader)

@@ -33,7 +33,7 @@
 | **Streamer Life Simulator 2** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StreamerLife2/README.en.md) |
 | **Wobbly Life** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/WobblyLife/README.en.md) |
 | **Muck** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/Muck/README.en.md) |
-| **Shift At Midnight (Demo)** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/ShiftAtMidnight/README.en.md) |
+| **Shift At Midnight** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/ShiftAtMidnight/README.en.md) |
 
 More games will be added over time. Each game has its own folder under [`games/`](games) with its own install guide.
 
