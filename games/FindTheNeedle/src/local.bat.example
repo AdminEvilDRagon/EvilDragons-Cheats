@@ -1,0 +1,7 @@
+rem Copy to local.bat and fill in your paths (local.bat is not committed).
+rem IMGUI    = Dear ImGui source (v1.91.5)
+rem MINHOOK  = MinHook source
+rem GAMEDIR  = the Find The Needle folder (with FindTheNeedle.exe) - leave empty and use install.bat
+set "IMGUI=C:\dev\imgui"
+set "MINHOOK=C:\dev\minhook"
+set "GAMEDIR="
