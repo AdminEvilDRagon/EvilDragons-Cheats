@@ -259,8 +259,19 @@ public static class Ui
     // Set Manual = true there: every helper then places itself with its own simple layout.
     // Rows need their column count up front: BeginRow(n) ... EndRow().
     public static bool Manual;
+    /// Some games strip GUI.Button too (only GUI.Label/Box survive). With OwnButtons (needs Manual)
+    /// buttons are drawn as boxes and the game feeds the mouse click in itself:
+    /// set Click (GUI coordinates, after the menu scale) for one frame, the button under it fires.
+    public static bool OwnButtons;
+    public static Vector2? Click;
     /// Screen rect of the last button/label (manual layout) - e.g. to detect clicks outside a field.
     public static Rect LastRect;
+    static Rect clip;
+    static bool clipping;
+    static Rect clipSavedArea;
+    static float clipScroll;
+    static GUIStyle noStyle;
+    static GUIContent noContent;
     static Rect area;
     static float cy, rowUsed, rowH, pendingW = -1f;
     static bool inRow;
@@ -274,7 +285,7 @@ public static class Ui
             if (Styled && style != null) GUILayout.BeginArea(r, style); else GUILayout.BeginArea(r, GUI.skin.box);
             return;
         }
-        if (Styled && style != null) GUI.Box(r, "", style); else GUI.Box(r, "");
+        if (Styled && style != null) { if (OwnButtons) GUI.Label(r, "", style); else GUI.Box(r, "", style); } else GUI.Box(r, "");
         float l = 14, t = 14, rr = 14, b = 14;
         try { if (Styled && style != null) { l = style.padding.left; t = style.padding.top; rr = style.padding.right; b = style.padding.bottom; } } catch { }
         area = new Rect(r.x + l, r.y + t, r.width - l - rr, r.height - t - b);
@@ -282,6 +293,36 @@ public static class Ui
     }
 
     public static void EndArea() { if (!Manual) GUILayout.EndArea(); }
+
+    /// Manual layout only: a scrollable part of the area, height px tall, scrolled down by scroll px.
+    /// Returns nothing; EndClip() returns how tall the content was (to limit the scrolling).
+    public static void BeginClip(float height, float scroll)
+    {
+        if (!Manual || clipping) return;
+        clip = new Rect(area.x, cy, area.width, Math.Max(10f, height));
+        noStyle ??= new GUIStyle();
+        noContent ??= new GUIContent();
+        GUI.BeginGroup(clip, noContent, noStyle);
+        clipping = true;
+        clipSavedArea = area;
+        clipScroll = scroll;
+        area = new Rect(0f, 0f, clip.width, clip.height);
+        cy = -scroll; inRow = false; pendingW = -1f;
+    }
+
+    public static float EndClip()
+    {
+        if (!clipping) return 0f;
+        float content = cy + clipScroll;
+        GUI.EndGroup();
+        clipping = false;
+        area = clipSavedArea;
+        cy = clip.yMax + Gap; inRow = false; pendingW = -1f;
+        return content;
+    }
+
+    /// Manual layout: what is left of the area below the current position.
+    public static float SpaceLeft => Manual ? Math.Max(0f, area.yMax - cy) : 0f;
 
     public static void BeginRow(int columns)
     {
@@ -351,6 +392,8 @@ public static class Ui
     static GUILayoutOption[] Fit(GUILayoutOption[] opts)
     {
         if (opts != null && opts.Length > 0) return opts;
+        // manual layout never uses options - and creating one crashes games that stripped GUILayout
+        if (Manual) return Array.Empty<GUILayoutOption>();
         if (shrink == null) { try { shrink = new[] { GUILayout.MinWidth(0f) }; } catch { shrink = Array.Empty<GUILayoutOption>(); } }
         return shrink;
     }
@@ -362,7 +405,15 @@ public static class Ui
         {
             var r = Next(Height(style, text, true));
             LastRect = r;
-            return Styled && style != null ? GUI.Button(r, text, style) : GUI.Button(r, text);
+            if (!OwnButtons) return Styled && style != null ? GUI.Button(r, text, style) : GUI.Button(r, text);
+            // a label with a style draws the style's background too - GUI.Label survives every strip
+            if (Styled && style != null) GUI.Label(r, text, style); else GUI.Box(r, text);
+            if (!Click.HasValue || !GUI.enabled) return false;
+            var p = Click.Value;
+            if (clipping) { if (!clip.Contains(p)) return false; p -= clip.position; }
+            if (!r.Contains(p)) return false;
+            Click = null;
+            return true;
         }
         bool hit;
         if (Styled && styleCallOk && style != null)

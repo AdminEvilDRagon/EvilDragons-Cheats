@@ -69,3 +69,36 @@ if renamed_names and os.path.exists(asserts):
         f.write(text)
 if renamed:
     print("fix_sdk: renamed %d members that hid their type" % renamed)
+
+# Newer Dumper-7 builds sometimes put the parameter structs of an interface function into the
+# parameters header of a different package, so a *_functions.cpp uses Params::X it never includes.
+# Add the missing #include lines.
+defined = {}
+struct_re = re.compile(r"^struct (\w+) final", re.M)
+for name in os.listdir(sdk):
+    if name.endswith("_parameters.hpp"):
+        with open(os.path.join(sdk, name), encoding="utf-8-sig") as f:
+            for m in struct_re.finditer(f.read()):
+                defined.setdefault(m.group(1), name)
+uses = re.compile(r"Params::(\w+)")
+added = 0
+for name in os.listdir(sdk):
+    if not name.endswith("_functions.cpp"):
+        continue
+    path = os.path.join(sdk, name)
+    with open(path, encoding="utf-8-sig") as f:
+        text = f.read()
+    own = name.replace("_functions.cpp", "_parameters.hpp")
+    need = sorted(set(defined[u] for u in uses.findall(text) if u in defined and defined[u] != own))
+    need = [h for h in need if '#include "%s"' % h not in text]
+    if not need:
+        continue
+    anchor = '#include "%s"' % own
+    if anchor not in text:
+        continue
+    text = text.replace(anchor, anchor + "".join('\n#include "%s"' % h for h in need), 1)
+    with open(path, "w", encoding="utf-8-sig") as f:
+        f.write(text)
+    added += len(need)
+if added:
+    print("fix_sdk: added %d missing parameter includes" % added)
