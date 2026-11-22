@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unreal-5.5-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/mod--loader-nicht%20n%C3%B6tig-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/plattform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -33,7 +33,7 @@ Die Installation dauert etwa 2 Minuten. Du brauchst **keinen** Mod-Loader – al
 ### Schritt 2 – Cheats installieren
 
 1. Geh auf die [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases)-Seite und lade
-   **`EvilDragons-Cheats-DiggingAHole-v1.0.0.zip`** herunter (nimm immer die neueste Version).
+   **`EvilDragons-Cheats-DiggingAHole-v1.1.0.zip`** herunter (nimm immer die neueste Version).
 2. Öffne die ZIP und kopiere den Ordner `DiggingGame` darin in deinen Spielordner.
    Wenn Windows fragt, ob zusammengeführt/ersetzt werden soll, klick auf **Ja**.
 3. Kontrolle: In `DiggingGame\Binaries\Win64\` liegen jetzt neben `DiggingGame-Win64-Shipping.exe`
@@ -55,7 +55,7 @@ Das Menü wird etwa 10 Sekunden nach dem Start geladen.
 | **Tools** | Bohrkraft bis 20x, Grabradius bis 5x, Jetpack-Kraft bis 5x, keine Tiefengrenze, Bohrer & Jetpack freischalten, Dynamit / Lampen / Schlüssel / Teleporter |
 | **Spawn** | Geldsack, Schatzschlüssel, Schatztruhe, Minen, Dynamit, Explosionen (Größe einstellbar), Lampen, Maulwurf – am Fadenkreuz oder vor dir, 1–25 Stück |
 | **Teleport** | Zurück zum Startpunkt, 3 Speicherplätze für Positionen |
-| **Settings** | 6 Themes, Tasten ändern, Save Settings |
+| **Settings** | 6 Themes, Tasten ändern, Benachrichtigungston an / aus, Save Settings |
 
 ## Hotkeys
 
@@ -100,6 +100,9 @@ Wie bei [Storage Hunter Simulator](../StorageHunter) – die gemeinsamen Teile l
 </details>
 
 ## Changelog
+
+**1.1.0**
+- Neue Benachrichtigungen unten links im Glas-Look mit leisem Klick (Ton in *Settings* abschaltbar)
 
 **1.0.0**
 - Erste Version

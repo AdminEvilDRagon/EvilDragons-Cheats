@@ -17,7 +17,7 @@ namespace OneMillionCoinsCheats;
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "evildragon.cheats.onemillioncoins";
-    public const string Version = "1.0.0";
+    public const string Version = "1.1.0";
 
     internal static ManualLogSource L;
     internal static ConfigFile Cfg;
@@ -245,7 +245,7 @@ public class CheatMenu : MonoBehaviour
     bool show;
     int tab;
     string lastGuiError;
-    static readonly string[] Tabs = { "Player", "Coins", "Skills", "Tools", "Teleport", "Settings" };
+    static readonly string[] Tabs = { "Player", "Coins", "Skills", "Tools", "Spawn", "Teleport", "Settings" };
     static readonly float[] MenuSizes = { 0.75f, 0.85f, 1f, 1.15f, 1.3f };
 
     // player
@@ -533,7 +533,7 @@ public class CheatMenu : MonoBehaviour
         GUILayout.BeginHorizontal();
         for (int i = 0; i < Tabs.Length; i++)
         {
-            if (i == 3) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }   // two rows of tabs
+            if (i == 4) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }   // two rows of tabs
             if (Ui.Button(Tabs[i], i == tab ? Ui.TabOn : Ui.Tab)) { tab = i; editId = null; rebinding = null; bodyScroll = Vector2.zero; }
         }
         GUILayout.EndHorizontal();
@@ -551,8 +551,9 @@ public class CheatMenu : MonoBehaviour
             case 1: DrawCoins(); break;
             case 2: DrawSkills(); break;
             case 3: DrawTools(); break;
-            case 4: DrawTeleport(); break;
-            case 5: DrawSettings(); break;
+            case 4: DrawSpawn(); break;
+            case 5: DrawTeleport(); break;
+            case 6: DrawSettings(); break;
         }
         if (locked) GUI.enabled = true;
         Ui.Space(4);
@@ -702,6 +703,86 @@ public class CheatMenu : MonoBehaviour
         Cheat.ToolSpeed = Ui.Chips(Cheat.ToolSpeed, ToolSpeedPresets, v => $"x{v:0}", 4);
         if (Ui.Button("Reset Tool Power", Ui.Chip)) { Cheat.ToolRange = Cheat.ToolPower = Cheat.ToolSpeed = 1f; }
         Ui.EndCard();
+    }
+
+    // ---------------- spawn ----------------
+    static readonly AccessTools.FieldRef<ThrowableObject, PhysicsCoinBurstPool> ThrowPool = AccessTools.FieldRefAccess<ThrowableObject, PhysicsCoinBurstPool>("_burstPool");
+    static readonly AccessTools.FieldRef<ThrowableObject, GameAudio> ThrowAudio = AccessTools.FieldRefAccess<ThrowableObject, GameAudio>("_audio");
+    static readonly int[] SpawnCounts = { 1, 5, 10 };
+    int spawnCount = 1;
+    readonly List<ThrowableObject> throwKinds = new List<ThrowableObject>();
+    float throwScannedAt = -99f;
+
+    static string CleanName(string n)
+    {
+        int i = n.IndexOf('('); if (i > 0) n = n.Substring(0, i);
+        return n.Replace('_', ' ').Trim();
+    }
+
+    void ScanThrowables()
+    {
+        throwScannedAt = Time.unscaledTime;
+        throwKinds.Clear();
+        var seen = new HashSet<string>();
+        foreach (var t in UnityEngine.Object.FindObjectsOfType<ThrowableObject>())
+            if (t != null && ThrowPool(t) != null && seen.Add(CleanName(t.name))) throwKinds.Add(t);
+    }
+
+    void DrawSpawn()
+    {
+        var p = Game.P;
+        Ui.BeginCard("Items", "Get any tool, bag or pair of boots for this run");
+        if (p != null)
+            foreach (var it in ItemCatalog.All)
+            {
+                if (it == null || it.Id == ItemId.Hands || it.IsTrinket) continue;
+                bool owned = p.OwnsItem(it.Id);
+                string label = $"<b>{it.Name}</b>" + Grey(owned ? "owned" : "get it");
+                if (Ui.Button(label, Ui.Row) && !owned) Act($"{it.Name} added - open your inventory (Tab) to equip it", () => GiveItem(p, it.Id));
+            }
+        Ui.Label("Items from learned skills stay. The others go away when the run loads again.", Ui.Sub);
+        Ui.EndCard();
+
+        if (Time.unscaledTime - throwScannedAt > 5f) ScanThrowables();
+        Ui.BeginCard("Objects", "Throwables land in front of you - throw them into the gold");
+        spawnCount = Ui.Chips(spawnCount, SpawnCounts, v => v.ToString(), 3);
+        if (throwKinds.Count == 0) Ui.Label("No throwable objects on this floor.", Ui.Sub);
+        foreach (var t in throwKinds)
+        {
+            if (t == null) continue;
+            string n = CleanName(t.name);
+            if (Ui.Button($"<b>{n}</b>" + Grey($"spawn {spawnCount}"), Ui.Row)) Act($"{spawnCount}x {n} in front of you", () => SpawnThrowable(t, spawnCount));
+        }
+        Ui.EndCard();
+    }
+
+    static void GiveItem(GameProgressManager p, ItemId id)
+    {
+        G.Owned(p).Add(id);
+        if (id == ItemId.Shovel) G.SetShovel.Invoke(p, new object[] { true });
+        if (id == ItemId.Magnet) G.SetMagnet.Invoke(p, new object[] { true });
+        if (id == ItemId.Vacuum) G.SetVacuum.Invoke(p, new object[] { true });
+        G.NotifyChanged(p);
+    }
+
+    void SpawnThrowable(ThrowableObject template, int count)
+    {
+        var me = Game.Me;
+        var cam = Camera.main;
+        if (me == null || template == null) throw new Exception("nothing to copy");
+        Vector3 fwd = cam != null ? cam.transform.forward : me.transform.forward;
+        fwd.y = 0; if (fwd.sqrMagnitude < 0.01f) fwd = me.transform.forward; fwd.Normalize();
+        Vector3 right = Vector3.Cross(Vector3.up, fwd);
+        for (int i = 0; i < count; i++)
+        {
+            int row = i / 5, col = i % 5;
+            Vector3 at = me.transform.position + fwd * (1.8f + row * 0.8f) + right * ((col - 2) * 0.6f) + Vector3.up * (1.2f + row * 0.2f);
+            var go = UnityEngine.Object.Instantiate(template.gameObject, at, template.transform.rotation);
+            go.name = template.name;
+            var t = go.GetComponent<ThrowableObject>();
+            t.Initialize(null, Game.P, ThrowPool(template), ThrowAudio(template), null);
+            if (t.Body != null) { t.Body.velocity = Vector3.zero; t.Body.angularVelocity = Vector3.zero; t.Body.isKinematic = false; }
+        }
     }
 
     // ---------------- coins ----------------

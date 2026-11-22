@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unity-6000.4%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/plattform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -46,7 +46,7 @@ Die Installation dauert etwa 5 Minuten und muss nur einmal gemacht werden.
 ### Schritt 4 – Cheats installieren
 
 1. Geh auf die [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases)-Seite und lade
-   **`EvilDragons-Cheats-Unharvest-v1.0.0.zip`** herunter (nimm immer die neueste Version).
+   **`EvilDragons-Cheats-Unharvest-v1.1.0.zip`** herunter (nimm immer die neueste Version).
 2. Öffne die ZIP und kopiere den Ordner `BepInEx` darin in deinen Spielordner.
    Wenn Windows fragt, ob zusammengeführt/ersetzt werden soll, klick auf **Ja**.
 3. Kontrolle: Die Datei `EvilDragon.UnharvestCheats.dll` liegt jetzt in `BepInEx\plugins\`.
@@ -65,6 +65,7 @@ Starte das Spiel, starte oder lade dein Spiel und drück **F1**. Das Menü öffn
 | **Despair** | Despair hinzufügen / abziehen, **gratis Upgrades**, Wisp-Wert x2 bis x100 |
 | **Wither** | **Alles im Umkreis verwelken** (5 bis 40 m), **das ganze Feld verwelken**, sofort verwelken, gedrückt halten, Auto-Aim, mehr Halme pro Klick, Heuschreckenschwarm ohne Abklingzeit |
 | **Upgrades** | Jedes Upgrade einzeln oder **alle auf einmal kaufen** |
+| **Spawn** | **Despair-Wisps** (10, 50 oder 200 vor dir – sie fliegen zu dir und zahlen Despair), Schmetterlinge, Vogelschwarm, Windböen, **alle Papiere einsammeln** |
 | **Teleport** | Position speichern, **Papiere** (mit Markierung), Meditationsplätze, Orte zum Anschauen |
 | **Settings** | 6 Themes, **Menügröße**, Tasten ändern, Save Settings |
 
@@ -123,6 +124,9 @@ Die DLL wird automatisch nach `BepInEx\plugins` kopiert (außer das Spiel läuft
 </details>
 
 ## Changelog
+
+**1.1.0**
+- Neuer Tab **Spawn**: Despair-Wisps, Schmetterlinge, Vogelschwarm, Windböen, alle Papiere einsammeln
 
 **1.0.0**
 - Erste Version

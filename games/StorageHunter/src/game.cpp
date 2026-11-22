@@ -928,14 +928,14 @@ void Game_UnanchorClick(bool useMouse, bool freeze)
         FHitResult hit{};
         if (!UKismetSystemLibrary::LineTraceSingle(World(), start, end, ETraceTypeQuery::TraceTypeQuery1, true, ignore,
             EDrawDebugTrace::None, &hit, true, FLinearColor{}, FLinearColor{}, 0))
-        { Toast("Nothing there"); return; }
+        { Notify("Nothing there", true); return; }
         UPrimitiveComponent* c = hit.Component.Get();
-        if (!c) { Toast("Nothing there"); return; }
+        if (!c) { Notify("Nothing there", true); return; }
 
         if (freeze)
         {
             // anchor it again where it is now
-            if (!c->IsSimulatingPhysics(FName())) { Toast("Already anchored"); return; }
+            if (!c->IsSimulatingPhysics(FName())) { Notify("Already anchored", true); return; }
             c->SetSimulatePhysics(false);
             Toast("Anchored");
             return;
@@ -951,9 +951,9 @@ void Game_UnanchorClick(bool useMouse, bool freeze)
         UPrimitiveComponent* done = UnanchorHit(c, hit.Item);
         if (!done)
         {
-            if (g_unanchorFails) Toast("No collision - can't unanchor this one");
-            else if (Skippable(c) && !c->IsA(UInstancedStaticMeshComponent::StaticClass())) Toast("Can't unanchor that");
-            else Toast("Too big - turn on 'Big objects' in the World tab");
+            if (g_unanchorFails) Notify("No collision - can't unanchor this one", true);
+            else if (Skippable(c) && !c->IsA(UInstancedStaticMeshComponent::StaticClass())) Notify("Can't unanchor that", true);
+            else Notify("Too big - turn on 'Big objects' in the World tab", true);
             return;
         }
         if (g_set.unanchorPush > 0)
@@ -1036,7 +1036,7 @@ void Game_UndoUnanchor(bool all)
             n++;
             if (!all) break;
         }
-        if (!n) Toast("Nothing to put back");
+        if (!n) Notify("Nothing to put back", true);
         else Toast(all ? "Put " + std::to_string(n) + " objects back" : std::string("Put back"));
     });
 }

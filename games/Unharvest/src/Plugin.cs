@@ -16,7 +16,7 @@ namespace UnharvestCheats;
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "evildragon.cheats.unharvest";
-    public const string Version = "1.0.0";
+    public const string Version = "1.1.0";
 
     internal static ManualLogSource L;
     internal static ConfigFile Cfg;
@@ -168,7 +168,7 @@ public class CheatMenu : MonoBehaviour
     bool show;
     int tab;
     string lastGuiError;
-    static readonly string[] Tabs = { "Player", "Despair", "Wither", "Upgrades", "Teleport", "Settings" };
+    static readonly string[] Tabs = { "Player", "Despair", "Wither", "Upgrades", "Spawn", "Teleport", "Settings" };
     static readonly float[] MenuSizes = { 0.75f, 0.85f, 1f, 1.15f, 1.3f };
 
     // player
@@ -477,7 +477,7 @@ public class CheatMenu : MonoBehaviour
         GUILayout.BeginHorizontal();
         for (int i = 0; i < Tabs.Length; i++)
         {
-            if (i == 3) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }   // two rows of tabs
+            if (i == 4) { GUILayout.EndHorizontal(); GUILayout.BeginHorizontal(); }   // two rows of tabs
             if (Ui.Button(Tabs[i], i == tab ? Ui.TabOn : Ui.Tab)) { tab = i; editId = null; rebinding = null; bodyScroll = Vector2.zero; }
         }
         GUILayout.EndHorizontal();
@@ -495,8 +495,9 @@ public class CheatMenu : MonoBehaviour
             case 1: DrawDespair(); break;
             case 2: DrawWither(); break;
             case 3: DrawUpgrades(); break;
-            case 4: DrawTeleport(); break;
-            case 5: DrawSettings(); break;
+            case 4: DrawSpawn(); break;
+            case 5: DrawTeleport(); break;
+            case 6: DrawSettings(); break;
         }
         if (locked) GUI.enabled = true;
         Ui.Space(4);
@@ -583,6 +584,71 @@ public class CheatMenu : MonoBehaviour
         Ui.BeginCard("Wisp Value", "Every wisp a dead stalk drops is worth more");
         Cheat.WispMult = Ui.Chips(Cheat.WispMult, WispPresets, v => $"x{v:0}", 5);
         Ui.EndCard();
+    }
+
+    // ---------------- spawn ----------------
+    static readonly MethodInfo WispSpawn = AccessTools.Method(typeof(DespairWispSpawner), "Spawn", new[] { typeof(Vector3) });
+    static readonly MethodInfo ButterflySpawn = AccessTools.Method(typeof(ButterflySpawner), "Spawn");
+    static readonly MethodInfo FlockSpawn = AccessTools.Method(typeof(SkyBirdSpawner), "SpawnFlock");
+    static readonly MethodInfo GustSpawn = AccessTools.Method(typeof(WindGustSpawner), "Spawn");
+    static readonly int[] WispCounts = { 10, 50, 200 };
+    static readonly int[] NatureCounts = { 1, 5, 10 };
+    int wispCount = 10, natureCount = 5;
+
+    Vector3 InFront(float metres)
+    {
+        var cam = Camera.main != null ? Camera.main.transform : Game.Me.transform;
+        Vector3 f = cam.forward; f.y = 0; if (f.sqrMagnitude < 0.01f) f = Game.Me.transform.forward; f.Normalize();
+        return Game.Me.transform.position + f * metres;
+    }
+
+    void DrawSpawn()
+    {
+        Ui.BeginCard("Despair Wisps", "Wisps rise in front of you and fly to you - every one pays despair");
+        wispCount = Ui.Chips(wispCount, WispCounts, v => v.ToString(), 3);
+        if (Ui.Button($"Spawn {wispCount} Wisps", Ui.Primary)) Act($"{wispCount} wisps on their way", () => SpawnWisps(wispCount));
+        Ui.Label("They follow your wisp upgrades (value, bonus wisps) and Wisp Value.", Ui.Sub);
+        Ui.EndCard();
+
+        Ui.BeginCard("Nature", "Life comes back to the field for a moment");
+        natureCount = Ui.Chips(natureCount, NatureCounts, v => v.ToString(), 3);
+        GUILayout.BeginHorizontal();
+        if (Ui.Button("Butterflies", Ui.Chip)) Act($"{natureCount} butterflies", () => CallOn<ButterflySpawner>(ButterflySpawn, natureCount));
+        if (Ui.Button("Bird Flock", Ui.Chip)) Act("A flock of birds", () => CallOn<SkyBirdSpawner>(FlockSpawn, 1, false));
+        if (Ui.Button("Wind Gust", Ui.Chip)) Act($"{natureCount} wind gusts", () => CallOn<WindGustSpawner>(GustSpawn, natureCount, 1f));
+        GUILayout.EndHorizontal();
+        Ui.EndCard();
+
+        Ui.BeginCard("Papers", "Every hidden paper of the collection");
+        if (Ui.Button("Collect All Papers", Ui.Primary)) Act("", CollectPapers);
+        Ui.EndCard();
+    }
+
+    void SpawnWisps(int count)
+    {
+        var sp = UnityEngine.Object.FindObjectOfType<DespairWispSpawner>();
+        if (sp == null || WispSpawn == null) throw new Exception("no wisp spawner in this scene");
+        Vector3 c = InFront(4f);
+        for (int i = 0; i < count; i++)
+        {
+            Vector2 r = UnityEngine.Random.insideUnitCircle * Mathf.Lerp(1f, 6f, Mathf.Clamp01(count / 100f));
+            WispSpawn.Invoke(sp, new object[] { c + new Vector3(r.x, 0f, r.y) });
+        }
+    }
+
+    static void CallOn<T>(MethodInfo m, int times, params object[] args) where T : UnityEngine.Object
+    {
+        var target = UnityEngine.Object.FindObjectOfType<T>();
+        if (target == null || m == null) throw new Exception("not in this part of the game");
+        for (int i = 0; i < times; i++) m.Invoke(target, args.Length > 0 ? args : null);
+    }
+
+    void CollectPapers()
+    {
+        int n = 0;
+        foreach (var p in UnityEngine.Object.FindObjectsOfType<PaperPickup>())
+            if (p != null && p.isActiveAndEnabled) { p.Collect(); n++; }
+        SetStatus(n > 0 ? $"{n} papers collected - open your collection to read them" : "Every paper is already collected");
     }
 
     void DrawWither()

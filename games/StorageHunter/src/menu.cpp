@@ -35,6 +35,7 @@ void Menu_LoadSettings()
     g_set.moneyIndex = I("MoneyIndex", 2);
     g_set.unanchorClick = I("UnanchorClick", 1) != 0;
     g_set.saveSettings = B("SaveSettings");
+    g_notifySound = I("NotifySound", 1) != 0;
     if (g_set.saveSettings)
     {
         g_set.speedMul = F("Speed", 1); g_set.jumpMul = F("Jump", 1); g_set.gravity = F("Gravity", 1);
@@ -50,7 +51,8 @@ void Menu_SaveSettings()
 {
     std::ofstream f(IniPath());
     f << "Theme=" << g_themeName << "\nKeyMenu=" << g_set.keyMenu << "\nKeyMoney=" << g_set.keyMoney << "\nKeyFly=" << g_set.keyFly
-      << "\nMoneyIndex=" << g_set.moneyIndex << "\nUnanchorClick=" << (int)g_set.unanchorClick << "\nSaveSettings=" << (int)g_set.saveSettings << "\n";
+      << "\nMoneyIndex=" << g_set.moneyIndex << "\nUnanchorClick=" << (int)g_set.unanchorClick << "\nSaveSettings=" << (int)g_set.saveSettings
+      << "\nNotifySound=" << (int)g_notifySound << "\n";
     if (g_set.saveSettings)
         f << "Speed=" << g_set.speedMul << "\nJump=" << g_set.jumpMul << "\nGravity=" << g_set.gravity
           << "\nUnlimitedJumps=" << (int)g_set.unlimitedJumps << "\nFlySpeed=" << g_set.flySpeed
@@ -386,6 +388,11 @@ static void TabSettings(const GameView&)
     ThemeCard();
     HotkeyEntry keys[] = { { "Open / close menu", &g_set.keyMenu }, { "Add money", &g_set.keyMoney }, { "Fly mode", &g_set.keyFly } };
     HotkeysCard(keys, 3);
+    if (BeginCard("Notifications"))
+    {
+        if (Toggle("Notification sound", &g_notifySound, "a soft click with every message")) { Dirty(); if (g_notifySound) Notify("Notification sound on"); }
+    }
+    EndCard();
     if (BeginCard("Save Settings"))
     {
         if (Toggle("Save Settings", &g_set.saveSettings, "cheats stay on next time")) Dirty();

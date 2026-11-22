@@ -26,8 +26,8 @@
 | **Can 'Em All** | `2.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CanEmAll/README.en.md) |
 | **Crime Simulator** | `1.2.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/CrimeSimulator/README.en.md) |
 | **Pumping Simulator 2** | `1.0.1` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/PumpingSimulator2/README.en.md) |
-| **Storage Hunter Simulator** | `1.1.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StorageHunter/README.en.md) |
-| **A Game About Digging A Hole** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/DiggingAHole/README.en.md) |
+| **Storage Hunter Simulator** | `1.2.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StorageHunter/README.en.md) |
+| **A Game About Digging A Hole** | `1.1.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/DiggingAHole/README.en.md) |
 | **Kebab Chefs! Prologue** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/KebabChefs/README.en.md) |
 | **Streamer Life Simulator** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StreamerLife/README.en.md) |
 | **Streamer Life Simulator 2** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/StreamerLife2/README.en.md) |
@@ -36,8 +36,8 @@
 | **Shift At Midnight** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/ShiftAtMidnight/README.en.md) |
 | **Supermarket Together** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/SupermarketTogether/README.en.md) |
 | **Too Many Balls** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/TooManyBalls/README.en.md) |
-| **One Million Coins** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/OneMillionCoins/README.en.md) |
-| **Unharvest** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/Unharvest/README.en.md) |
+| **One Million Coins** | `1.1.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/OneMillionCoins/README.en.md) |
+| **Unharvest** | `1.1.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/Unharvest/README.en.md) |
 | **Potato Please** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/PotatoPlease/README.en.md) |
 | **Moon Sweepers** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/MoonSweepers/README.en.md) |
 | **A Game About Chopping Trees** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Install guide & features](games/ChoppingTrees/README.en.md) |

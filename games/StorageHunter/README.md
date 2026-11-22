@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.2.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unreal-5.4-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/mod--loader-nicht%20n%C3%B6tig-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/plattform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -35,7 +35,7 @@ Die Installation dauert etwa 2 Minuten. Du brauchst **keinen** Mod-Loader – al
 ### Schritt 2 – Cheats installieren
 
 1. Geh auf die [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases)-Seite und lade
-   **`EvilDragons-Cheats-StorageHunter-v1.1.0.zip`** herunter (nimm immer die neueste Version).
+   **`EvilDragons-Cheats-StorageHunter-v1.2.0.zip`** herunter (nimm immer die neueste Version).
 2. Öffne die ZIP und kopiere den Ordner `StorageHunter` darin in deinen Spielordner.
    Wenn Windows fragt, ob zusammengeführt/ersetzt werden soll, klick auf **Ja**.
 3. Kontrolle: In `StorageHunter\Binaries\Win64\` liegen jetzt neben `StorageHunter-Win64-Shipping.exe`
@@ -58,7 +58,7 @@ Das Menü wird etwa 10 Sekunden nach dem Start geladen.
 | **Workshop** | Werkzeug-Level (Prüfen, Reparieren, Schlösser knacken), Prüfen & Reparieren klappt immer, Container entsperren, Zufalls-Items |
 | **Business** | Pfandleihe leveln / kaufen, **jede Auktion gewinnen** (NPC-Bieter haben kein Geld), Aufgabe / Quest abschließen, unendlich Sprit, Tank füllen |
 | **World** | **Teleport** zu Häusern, Pfandhäusern, Auktionen und Garage, **Auto zu dir holen**, zum Auto teleportieren, Position speichern. **Unanchor**: Objekte der Map lösen (Strg + Klick oder alles in Reichweite), schubsen, einfrieren, zurücksetzen. Uhrzeit setzen, Zeit einfrieren |
-| **Settings** | 6 Themes, Tasten ändern, Save Settings |
+| **Settings** | 6 Themes, Tasten ändern, Benachrichtigungston an / aus, Save Settings |
 
 ## Hotkeys
 
@@ -115,6 +115,9 @@ und ein SDK des Spiels, erzeugt mit [Dumper-7](https://github.com/Encryqed/Dumpe
 </details>
 
 ## Changelog
+
+**1.2.0**
+- Neue Benachrichtigungen unten links im Glas-Look mit leisem Klick (Ton in *Settings* abschaltbar), Fehler in Rot
 
 **1.1.0**
 - Teleport zu Häusern, Pfandhäusern, Auktionen und Garage, Position speichern

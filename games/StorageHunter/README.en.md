@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.2.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unreal-5.4-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/mod--loader-not%20needed-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -35,7 +35,7 @@ Installing takes about 2 minutes. You do **not** need a mod loader – everythin
 ### Step 2 – Install the cheats
 
 1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-StorageHunter-v1.1.0.zip`** (always take the newest version).
+   **`EvilDragons-Cheats-StorageHunter-v1.2.0.zip`** (always take the newest version).
 2. Open the zip and copy the `StorageHunter` folder inside it into your game folder.
    If Windows asks to merge/replace, click **Yes**.
 3. Check: `StorageHunter\Binaries\Win64\` now has the file `dxgi.dll` and the folder `EvilDragon`
@@ -58,7 +58,7 @@ The menu loads about 10 seconds after the game starts.
 | **Workshop** | Tool levels (verification, fixing, lockpicking), verify & fix always succeed, unlock containers, random items |
 | **Business** | Level up / buy the pawn shop, **win every auction** (NPC bidders have no money), complete task / quest, infinite fuel, fill the tank |
 | **World** | **Teleport** to houses, pawn shops, auctions and the garage, **bring your car**, go to your car, save a position. **Unanchor**: make map objects loose (Ctrl + click or everything in range), push, freeze, put back. Set the time, freeze time |
-| **Settings** | 6 themes, change keys, Save Settings |
+| **Settings** | 6 themes, change keys, notification sound on / off, Save Settings |
 
 ## Hotkeys
 
@@ -115,6 +115,9 @@ and an SDK of the game made with [Dumper-7](https://github.com/Encryqed/Dumper-7
 </details>
 
 ## Changelog
+
+**1.2.0**
+- New glass notifications in the bottom-left corner with a soft click (sound can be turned off in *Settings*), errors in red
 
 **1.1.0**
 - Teleport to houses, pawn shops, auctions and the garage, save a position

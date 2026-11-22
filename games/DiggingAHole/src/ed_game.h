@@ -2,4 +2,4 @@
 #pragma once
 #define ED_GAME_NAME "A Game About Digging A Hole"
 #define ED_FILE_BASE "EvilDragon.DiggingAHoleCheats"
-#define ED_VERSION "1.0.0"
+#define ED_VERSION "1.1.0"

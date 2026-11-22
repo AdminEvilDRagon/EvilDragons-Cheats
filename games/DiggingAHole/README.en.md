@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unreal-5.5-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/mod--loader-not%20needed-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -33,7 +33,7 @@ Installing takes about 2 minutes. You do **not** need a mod loader – everythin
 ### Step 2 – Install the cheats
 
 1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-DiggingAHole-v1.0.0.zip`** (always take the newest version).
+   **`EvilDragons-Cheats-DiggingAHole-v1.1.0.zip`** (always take the newest version).
 2. Open the zip and copy the `DiggingGame` folder inside it into your game folder.
    If Windows asks to merge/replace, click **Yes**.
 3. Check: `DiggingGame\Binaries\Win64\` now has the file `dxgi.dll` and the folder `EvilDragon`
@@ -55,7 +55,7 @@ The menu loads about 10 seconds after the game starts.
 | **Tools** | Drill strength up to 20x, dig radius up to 5x, jetpack power up to 5x, no depth limit, unlock drill & jetpack, dynamite / lamps / keys / teleporters |
 | **Spawn** | Money bag, treasure key, treasure chest, mines, dynamite, explosions (adjustable size), lamps, mole – at the crosshair or in front of you, 1–25 at once |
 | **Teleport** | Back to where you started, 3 saved positions |
-| **Settings** | 6 themes, change keys, Save Settings |
+| **Settings** | 6 themes, change keys, notification sound on / off, Save Settings |
 
 ## Hotkeys
 
@@ -100,6 +100,9 @@ Copy `src\local.bat.example` to `src\local.bat`, fill in your paths and run `src
 </details>
 
 ## Changelog
+
+**1.1.0**
+- New glass notifications in the bottom-left corner with a soft click (sound can be turned off in *Settings*)
 
 **1.0.0**
 - First version

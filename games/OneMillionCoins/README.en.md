@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/version-1.1.0-00ff4c?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/Unity-6000.6%20Mono-00e5ff?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/BepInEx-5.4.23-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/platform-Windows-ffb300?style=for-the-badge&labelColor=0b1a10" />
@@ -46,7 +46,7 @@ The installation takes about 5 minutes and only has to be done once.
 ### Step 4 – Install the cheats
 
 1. Go to the [**Releases**](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) page and download
-   **`EvilDragons-Cheats-OneMillionCoins-v1.0.0.zip`** (always take the newest version).
+   **`EvilDragons-Cheats-OneMillionCoins-v1.1.0.zip`** (always take the newest version).
 2. Open the ZIP and copy the `BepInEx` folder inside it into your game folder.
    If Windows asks whether to merge/replace, click **Yes**.
 3. Check: the file `EvilDragon.OneMillionCoinsCheats.dll` is now in `BepInEx\plugins\`.
@@ -65,6 +65,7 @@ Start the game, start or continue a run and press **F1**. The menu opens on the 
 | **Coins** | **Bank coins right away** or put them in your bag (the coins really come out of the gold pile), **bottomless bag**, **bank your bag from anywhere**, auto bank, **coin magnet** with 3 to 16 m range |
 | **Skills** | **Add skill points**, **learn every skill at once** (no coin goal needed) |
 | **Tools** | **Unlock every item** (tools, bags, boots), tool range, strength and speed – for every tool, your hands too |
+| **Spawn** | **Get any item one by one** (tools, bags, boots), **spawn throwable objects** (1, 5 or 10 in front of you) |
 | **Teleport** | Save a position, back to the start, deposit machines, terminals, the elevator and **every floor** |
 | **Settings** | 6 themes, **menu size**, change keys, Save Settings |
 
@@ -125,6 +126,9 @@ The DLL is copied into `BepInEx\plugins` automatically (unless the game is runni
 </details>
 
 ## Changelog
+
+**1.1.0**
+- New **Spawn** tab: get any item one by one, spawn throwable objects in front of you
 
 **1.0.0**
 - First version
