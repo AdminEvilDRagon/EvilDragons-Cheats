@@ -53,6 +53,8 @@ std::string KeyName(int vk);
 
 // toast, settings save, hotkeys
 void Toast(const std::string& s);
+void Notify(const std::string& s, bool error = false);
+extern bool g_notifySound;   // soft sound with every notification (Settings)   // bottom-left notification, any thread
 void DrawToast();
 void Dirty();
 bool SaveDue();

@@ -1,5 +1,9 @@
 // EvilDragon's Cheats - shared ImGui look for the Unreal Engine mods (themes, widgets, log, toast).
 #include "ed_ui.h"
+#include <algorithm>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
+#include <cmath>
 #include <cstdio>
 #include <cstdarg>
 #include "imgui_internal.h"
@@ -210,9 +214,61 @@ std::string KeyName(int vk)
 }
 
 // ---------------- toast ----------------
-std::string g_toast;
-double g_toastUntil;
-void Toast(const std::string& s) { g_toast = s; g_toastUntil = ImGui::GetTime() + 2.0; }
+// Notifications: liquid-glass cards in the bottom-left corner, slide in, fade out, soft "thock" sound.
+// Safe to call from any thread.
+struct Notice { std::string text; bool error; ULONGLONG born; float slot; };
+static std::mutex g_noticeLock;
+static std::vector<Notice> g_notices;
+static const ULONGLONG kNoticeLife = 3400;
+bool g_notifySound = true;
+
+// a short, muffled click: two low sine partials with a fast decay, built once as a WAV in memory
+static std::vector<unsigned char> MakeThock(float pitch)
+{
+    const int rate = 44100, n = rate * 14 / 100;
+    std::vector<unsigned char> w(44 + n * 2);
+    auto put32 = [&](int at, uint32_t v) { memcpy(&w[at], &v, 4); };
+    auto put16 = [&](int at, uint16_t v) { memcpy(&w[at], &v, 2); };
+    memcpy(&w[0], "RIFF", 4); put32(4, (uint32_t)w.size() - 8); memcpy(&w[8], "WAVEfmt ", 8);
+    put32(16, 16); put16(20, 1); put16(22, 1); put32(24, rate); put32(28, rate * 2); put16(32, 2); put16(34, 16);
+    memcpy(&w[36], "data", 4); put32(40, n * 2);
+    float lp = 0;
+    for (int i = 0; i < n; i++)
+    {
+        float t = (float)i / rate;
+        float env = expf(-t * 38.0f) * (1 - expf(-t * 900.0f));
+        float f = pitch * (1.0f + 0.35f * expf(-t * 60.0f));          // tiny downward bend = "dumpf"
+        float x = sinf(6.2831853f * f * t) + 0.35f * sinf(6.2831853f * f * 2.01f * t);
+        lp += (x - lp) * 0.18f;                                          // low-pass keeps it soft
+        short v = (short)(lp * env * 9000);
+        put16(44 + i * 2, (uint16_t)v);
+    }
+    return w;
+}
+
+static void PlayThock(bool error)
+{
+    if (!g_notifySound) return;
+    static std::vector<unsigned char> ok = MakeThock(300), bad = MakeThock(190);
+    PlaySoundA((LPCSTR)(error ? bad : ok).data(), nullptr, SND_MEMORY | SND_ASYNC | SND_NODEFAULT);
+}
+
+void Notify(const std::string& s, bool error)
+{
+    if (s.empty()) return;
+    {
+        std::lock_guard<std::mutex> lk(g_noticeLock);
+        bool again = false;
+        for (auto& n : g_notices) if (n.text == s && n.error == error) { n.born = GetTickCount64(); again = true; }
+        if (!again)
+        {
+            g_notices.push_back({ s, error, GetTickCount64(), -1.0f });
+            if (g_notices.size() > 5) g_notices.erase(g_notices.begin());
+        }
+    }
+    PlayThock(error);
+}
+void Toast(const std::string& s) { Notify(s, false); }
 
 bool g_dirty;
 double g_dirtyAt;
@@ -230,18 +286,73 @@ bool GameFocused()
 }
 
 
+static float Ease(float t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return 1 - (1 - t) * (1 - t) * (1 - t); }
+static ImU32 Rgba(float r, float g, float b, float a) { return ImGui::ColorConvertFloat4ToU32({ r, g, b, a }); }
+
 void DrawToast()
 {
-    if (ImGui::GetTime() >= g_toastUntil) return;
+    std::lock_guard<std::mutex> lk(g_noticeLock);
+    ULONGLONG now = GetTickCount64();
+    g_notices.erase(std::remove_if(g_notices.begin(), g_notices.end(), [&](const Notice& n) { return now - n.born > kNoticeLife; }), g_notices.end());
+    if (g_notices.empty()) return;
     ImGuiIO& io = ImGui::GetIO();
     ImDrawList* dl = ImGui::GetForegroundDrawList();
-    ImGui::PushFont(Big());
-    ImVec2 ts = ImGui::CalcTextSize(g_toast.c_str());
-    ImVec2 p{ (io.DisplaySize.x - ts.x) * 0.5f, io.DisplaySize.y * 0.12f };
-    dl->AddRectFilled({ p.x - 18, p.y - 10 }, { p.x + ts.x + 18, p.y + ts.y + 10 }, U(T->bg), 12);
-    dl->AddRect({ p.x - 18, p.y - 10 }, { p.x + ts.x + 18, p.y + ts.y + 10 }, U(T->a), 12, 0, 2);
-    dl->AddText(p, U(kText), g_toast.c_str());
-    ImGui::PopFont();
+    const float pad = 14, gap = 10, margin = 26, icon = 26, round = 16, wrap = 400;
+    float y = io.DisplaySize.y - margin;
+    float dt = io.DeltaTime > 0 ? io.DeltaTime : 1.0f / 60;
+    for (int i = (int)g_notices.size() - 1; i >= 0; i--)
+    {
+        Notice& n = g_notices[i];
+        float age = (now - n.born) / 1000.0f, life = kNoticeLife / 1000.0f;
+        float in = Ease(age / 0.42f), out = Ease((life - age) / 0.5f);
+        float al = in < out ? in : out;
+        ImVec2 ts = ImGui::CalcTextSize(n.text.c_str(), nullptr, false, wrap);
+        float h = (ts.y > icon ? ts.y : icon) + pad * 2, w = ts.x + icon + pad * 3;
+        float target = y - h;
+        n.slot = n.slot < 0 ? target + 18 : n.slot + (target - n.slot) * (1 - expf(-dt * 12));
+        float x = margin - (1 - in) * 46;
+        ImVec2 a{ x, n.slot }, b{ x + w, n.slot + h };
+        ImVec4 ac = n.error ? kRed : T->a;
+
+        // soft shadow
+        for (int k = 3; k >= 1; k--)
+            dl->AddRectFilled({ a.x - k * 2.0f, a.y - k + 6 }, { b.x + k * 2.0f, b.y + k * 3.0f + 6 }, Rgba(0, 0, 0, 0.07f * al), round + k * 3);
+        // glass body: dark translucent, lighter at the top, tinted with the accent
+        dl->AddRectFilled(a, b, Rgba(0.06f + ac.x * 0.05f, 0.07f + ac.y * 0.05f, 0.09f + ac.z * 0.05f, 0.62f * al), round);
+        dl->AddRectFilledMultiColor({ a.x + 2, a.y + 2 }, { b.x - 2, a.y + h * 0.5f },
+                                    Rgba(1, 1, 1, 0.10f * al), Rgba(1, 1, 1, 0.10f * al), Rgba(1, 1, 1, 0.0f), Rgba(1, 1, 1, 0.0f));
+        // accent glow from the left
+        dl->AddRectFilledMultiColor({ a.x + 2, a.y + 2 }, { a.x + w * 0.45f, b.y - 2 },
+                                    Rgba(ac.x, ac.y, ac.z, 0.16f * al), Rgba(ac.x, ac.y, ac.z, 0.0f), Rgba(ac.x, ac.y, ac.z, 0.0f), Rgba(ac.x, ac.y, ac.z, 0.16f * al));
+        // rim: bright top highlight, faint everywhere else
+        dl->AddRect(a, b, Rgba(1, 1, 1, 0.16f * al), round, 0, 1.0f);
+        dl->PathArcTo({ a.x + round, a.y + round }, round - 0.5f, 3.14159f, 4.71239f, 10);
+        dl->PathArcTo({ b.x - round, a.y + round }, round - 0.5f, 4.71239f, 6.28318f, 10);
+        dl->PathStroke(Rgba(1, 1, 1, 0.38f * al), 0, 1.2f);
+
+        // icon bubble with a check or a cross
+        ImVec2 c{ a.x + pad + icon * 0.5f, (a.y + b.y) * 0.5f };
+        dl->AddCircleFilled(c, icon * 0.5f, Rgba(ac.x, ac.y, ac.z, 0.22f * al), 24);
+        dl->AddCircle(c, icon * 0.5f, Rgba(ac.x, ac.y, ac.z, 0.85f * al), 24, 1.5f);
+        ImU32 ic = Rgba(ac.x * 0.4f + 0.6f, ac.y * 0.4f + 0.6f, ac.z * 0.4f + 0.6f, al);
+        if (n.error)
+        {
+            float r = icon * 0.2f;
+            dl->AddLine({ c.x - r, c.y - r }, { c.x + r, c.y + r }, ic, 2.0f);
+            dl->AddLine({ c.x - r, c.y + r }, { c.x + r, c.y - r }, ic, 2.0f);
+        }
+        else
+        {
+            ImVec2 pts[3] = { { c.x - icon * 0.22f, c.y + 0.5f }, { c.x - icon * 0.05f, c.y + icon * 0.17f }, { c.x + icon * 0.24f, c.y - icon * 0.16f } };
+            dl->AddPolyline(pts, 3, ic, 0, 2.0f);
+        }
+        // text
+        dl->AddText(ImGui::GetFont(), ImGui::GetFontSize(), { a.x + pad * 2 + icon, a.y + (h - ts.y) * 0.5f }, Rgba(kText.x, kText.y, kText.z, al), n.text.c_str(), nullptr, wrap);
+        // time left as a thin line inside the bottom edge
+        float left = 1 - age / life;
+        if (left > 0) dl->AddRectFilled({ a.x + round, b.y - 3.0f }, { a.x + round + (w - round * 2) * left, b.y - 1.5f }, Rgba(ac.x, ac.y, ac.z, 0.5f * al), 1);
+        y = n.slot - gap;
+    }
 }
 
 bool SaveDue()

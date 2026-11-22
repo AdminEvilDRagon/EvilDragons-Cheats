@@ -24,7 +24,7 @@ static BOOL CALLBACK FindGameWindow(HWND hwnd, LPARAM found)
     GetWindowThreadProcessId(hwnd, &pid);
     wchar_t cls[64] = {};
     GetClassNameW(hwnd, cls, 64);
-    if (pid == GetCurrentProcessId() && IsWindowVisible(hwnd) && wcscmp(cls, L"UnrealWindow") == 0)
+    if (pid == GetCurrentProcessId() && IsWindowVisible(hwnd) && (wcscmp(cls, L"UnrealWindow") == 0 || wcscmp(cls, L"UnityWndClass") == 0))
     {
         *(bool*)found = true;
         return FALSE;
@@ -34,7 +34,7 @@ static BOOL CALLBACK FindGameWindow(HWND hwnd, LPARAM found)
 
 static DWORD WINAPI LoadMods(LPVOID)
 {
-    // Wait until the engine is up (game window visible), then a few more seconds.
+    // Wait until the engine is up (Unreal or Unity game window visible), then a few more seconds.
     bool found = false;
     while (!found) { Sleep(500); EnumWindows(FindGameWindow, (LPARAM)&found); }
     Sleep(8000);
