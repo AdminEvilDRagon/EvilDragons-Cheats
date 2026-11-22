@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/v/release/AdminEvilDRagon/EvilDragons-Cheats?style=for-the-badge&color=00ff4c&labelColor=0b1a10&logo=github" /></a>
   <a href="https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases"><img src="https://img.shields.io/github/downloads/AdminEvilDRagon/EvilDragons-Cheats/total?style=for-the-badge&color=00e5ff&labelColor=0b1a10&label=downloads" /></a>
-  <img src="https://img.shields.io/badge/spiele-13-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
+  <img src="https://img.shields.io/badge/spiele-15-ff2fbf?style=for-the-badge&labelColor=0b1a10" />
   <img src="https://img.shields.io/badge/nur-einzelspieler-ffb300?style=for-the-badge&labelColor=0b1a10" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/lizenz-MIT-a36bff?style=for-the-badge&labelColor=0b1a10" /></a>
 </p>
@@ -36,6 +36,8 @@
 | **Shift At Midnight** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/ShiftAtMidnight) |
 | **Supermarket Together** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/SupermarketTogether) |
 | **Too Many Balls** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/TooManyBalls) |
+| **One Million Coins** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/OneMillionCoins) |
+| **Unharvest** | `1.0.0` | [Releases](https://github.com/AdminEvilDRagon/EvilDragons-Cheats/releases) | [Installation & Features](games/Unharvest) |
 
 Weitere Spiele kommen mit der Zeit dazu. Jedes Spiel hat einen eigenen Ordner unter [`games/`](games) mit eigener Anleitung.
 
@@ -81,6 +83,8 @@ EvilDragons-Cheats/
     ├── ShiftAtMidnight/
     ├── SupermarketTogether/
     ├── TooManyBalls/
+    ├── OneMillionCoins/
+    ├── Unharvest/
     ├── StorageHunter/      (Unreal Engine, C++)
     └── DiggingAHole/       (Unreal Engine, C++)
 ```
